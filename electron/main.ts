@@ -26,8 +26,59 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null
 
+interface configUser {
+  Program?: {
+    Path: string
+  },
+  Script?: {
+    Path: string
+  },
+  Mouse?: {
+    x: number,
+    y: number,
+    click: 'left' | 'right'
+  },
+  WriteText?: {
+    text: string
+  },
+  Delay?: {
+    time: number
+  },
+  Loop?: {
+    time: number
+  }
+}
+
+const TaskUser: configUser = {
+  Program: {
+    Path: ''
+  },
+  Script: {
+    Path: ''
+  },
+  Mouse: {
+    x: 0,
+    y: 0,
+    click: 'left'
+  },
+  WriteText: {
+    text: ''
+  },
+  Delay: {
+    time: 0
+  },
+  Loop: {
+    time: 0
+  }
+}
+
+
 function createWindow() {
   win = new BrowserWindow({
+    x: 600,
+    y: 100,
+    width: 600,
+    height: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
@@ -66,11 +117,18 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.handle('teste', async () => {
+ipcMain.handle('get:path', async (event, type) => {
   const resultado = await dialog.showOpenDialog({
     properties: ['openFile']
   })
-  console.log(resultado.filePaths[0])
+  if (type == "open") {
+    TaskUser.Program.Path = resultado.filePaths[0]
+  } else {
+    TaskUser.Script.Path = resultado.filePaths[0]
+  }
+  return {
+    saida: resultado.filePaths[0]
+  }
 })
 
 

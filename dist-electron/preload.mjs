@@ -1,7 +1,7 @@
 "use strict";
 const electron = require("electron");
 electron.contextBridge.exposeInMainWorld("electronAPI", {
-  configTeste: () => electron.ipcRenderer.send("teste")
+  GetPath: (type) => electron.ipcRenderer.invoke("get:path", type)
   // You can expose other APTs you need here.
   // ...
 });
