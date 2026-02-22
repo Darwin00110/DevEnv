@@ -1,68 +1,162 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
+@layer base {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --background: 0 0% 5%;
+    --foreground: 120 60% 70%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 120 60% 70%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 120 60% 70%;
+
+    --primary: 120 100% 40%;
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 120 40% 60%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 120 15% 40%;
+
+    --accent: 120 80% 35%;
+    --accent-foreground: 0 0% 5%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 120 20% 18%;
+    --input: 120 20% 15%;
+    --ring: 120 100% 40%;
+
+    --radius: 0.375rem;
+
+    /* Custom DevEnv tokens */
+    --terminal-bg: 0 0% 4%;
+    --terminal-green: 120 100% 45%;
+    --terminal-cyan: 185 100% 50%;
+    --terminal-amber: 38 100% 55%;
+    --terminal-red: 0 85% 55%;
+    --terminal-glow: 0 0 8px hsl(120 100% 45% / 0.6);
+    --terminal-glow-cyan: 0 0 8px hsl(185 100% 50% / 0.6);
+    --grid-color: 120 30% 12%;
+
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 120 40% 60%;
+    --sidebar-primary: 120 100% 40%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 120 60% 70%;
+    --sidebar-border: 120 20% 15%;
+    --sidebar-ring: 120 100% 40%;
   }
-  a:hover {
-    color: #747bff;
+
+  /* Cyber blue theme */
+  .theme-cyber {
+    --foreground: 185 60% 70%;
+    --card-foreground: 185 60% 70%;
+    --popover-foreground: 185 60% 70%;
+    --primary: 185 100% 50%;
+    --primary-foreground: 0 0% 5%;
+    --secondary-foreground: 185 40% 55%;
+    --muted-foreground: 185 15% 40%;
+    --accent: 185 80% 40%;
+    --accent-foreground: 0 0% 5%;
+    --border: 185 20% 18%;
+    --input: 185 20% 15%;
+    --ring: 185 100% 50%;
+    --terminal-green: 185 100% 50%;
+    --terminal-glow: 0 0 8px hsl(185 100% 50% / 0.6);
+    --grid-color: 185 30% 12%;
+    --sidebar-foreground: 185 40% 60%;
+    --sidebar-primary: 185 100% 50%;
+    --sidebar-accent-foreground: 185 60% 70%;
+    --sidebar-border: 185 20% 15%;
+    --sidebar-ring: 185 100% 50%;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
+
+  body {
+    @apply bg-background text-foreground font-mono antialiased;
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: var(--terminal-glow);
+  }
+
+  .text-glow-cyan {
+    text-shadow: var(--terminal-glow-cyan);
+  }
+
+  .border-glow {
+    box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.3), var(--terminal-glow);
+  }
+
+  .scanline {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scanline::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(var(--primary) / 0.03) 2px,
+      hsl(var(--primary) / 0.03) 4px
+    );
+    pointer-events: none;
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(var(--grid-color) / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid-color) / 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+/* Cursor blink animation */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(0 0% 5%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
 }

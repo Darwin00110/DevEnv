@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -41,6 +41,7 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
+    win.webContents.openDevTools()
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
@@ -64,5 +65,13 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+ipcMain.handle('teste', async () => {
+  const resultado = await dialog.showOpenDialog({
+    properties: ['openFile']
+  })
+  console.log(resultado.filePaths[0])
+})
+
 
 app.whenReady().then(createWindow)
