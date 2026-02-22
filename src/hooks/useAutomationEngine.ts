@@ -1,147 +1,215 @@
 import { useState, useCallback, useRef } from 'react';
-import { Automation, AutomationStep, LogEntry, createId } from '@/lib/automation';
+import { Automation, AutomationStep, LogEntry, LogLevel, createId } from '@/lib/automation';
 
-const STORAGE_KEY = 'devenv_automations';
-const PROFILE_KEY = 'devenv_profile';
+// ─── Constantes de storage ────────────────────────────────────────────────────
+
+const STORAGE_KEY  = 'devenv_automations';
+const PROFILE_KEY  = 'devenv_profile';
+
+// ─── Helpers de storage ───────────────────────────────────────────────────────
+
+function loadAutomations(): Automation[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistAutomations(automations: Automation[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(automations));
+  } catch (e) {
+    console.error('[DevEnv] Falha ao salvar automações:', e);
+  }
+}
+
+function makeLog(level: LogLevel, message: string): LogEntry {
+  return { id: createId(), level, message, timestamp: Date.now() };
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useAutomationEngine() {
-  const [automations, setAutomations] = useState<Automation[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  const [automations, setAutomations] = useState<Automation[]>(loadAutomations);
 
-  const [logs, setLogs] = useState<LogEntry[]>([
-    { id: createId(), level: 'SYSTEM', message: 'DevEnv v1.0.0 initialized', timestamp: Date.now() },
-    { id: createId(), level: 'INFO', message: 'Automation engine ready', timestamp: Date.now() },
-    { id: createId(), level: 'SYSTEM', message: 'Type "help" for available commands', timestamp: Date.now() },
+  const [logs, setLogs] = useState<LogEntry[]>(() => [
+    makeLog('SYSTEM', 'DevEnv v1.0.0 inicializado'),
+    makeLog('INFO',   'Motor de automação pronto'),
+    makeLog('SYSTEM', 'Digite "help" para ver os comandos disponíveis'),
   ]);
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentProfile, setCurrentProfile] = useState(() => 
-    localStorage.getItem(PROFILE_KEY) || 'default'
+  const [isRunning, setIsRunning]       = useState(false);
+  const [currentProfile, setCurrentProfile] = useState(
+    () => localStorage.getItem(PROFILE_KEY) ?? 'default'
   );
+
   const abortRef = useRef(false);
 
-  const persist = useCallback((autos: Automation[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(autos));
-  }, []);
+  // ── Logs ────────────────────────────────────────────────────────────────────
 
-  const addLog = useCallback((level: LogEntry['level'], message: string) => {
-    const entry: LogEntry = { id: createId(), level, message, timestamp: Date.now() };
-    setLogs(prev => [...prev, entry]);
+  const addLog = useCallback((level: LogLevel, message: string) => {
+    setLogs(prev => [...prev, makeLog(level, message)]);
   }, []);
 
   const clearLogs = useCallback(() => {
-    setLogs([{ id: createId(), level: 'SYSTEM', message: 'Console cleared', timestamp: Date.now() }]);
+    setLogs([makeLog('SYSTEM', 'Console limpo')]);
   }, []);
+
+  // ── CRUD de automações ───────────────────────────────────────────────────────
 
   const saveAutomation = useCallback((auto: Automation) => {
     setAutomations(prev => {
-      const exists = prev.findIndex(a => a.id === auto.id);
-      const next = exists >= 0 ? prev.map(a => a.id === auto.id ? auto : a) : [...prev, auto];
-      persist(next);
+      const exists = prev.some(a => a.id === auto.id);
+      const updated = { ...auto, updatedAt: Date.now() };
+      const next = exists
+        ? prev.map(a => (a.id === auto.id ? updated : a))
+        : [...prev, updated];
+      persistAutomations(next);
       return next;
     });
-    addLog('SUCCESS', `Automation "${auto.name}" saved`);
-  }, [persist, addLog]);
+    addLog('SUCCESS', `Automação "${auto.name}" salva`);
+  }, [addLog]);
 
   const deleteAutomation = useCallback((id: string) => {
     setAutomations(prev => {
       const auto = prev.find(a => a.id === id);
       const next = prev.filter(a => a.id !== id);
-      persist(next);
-      if (auto) addLog('INFO', `Automation "${auto.name}" deleted`);
+      persistAutomations(next);
+      if (auto) addLog('INFO', `Automação "${auto.name}" excluída`);
       return next;
     });
-  }, [persist, addLog]);
+  }, [addLog]);
 
-  const simulateStep = async (step: AutomationStep): Promise<void> => {
-    if (abortRef.current) throw new Error('Execution aborted');
+  // ── Execução ─────────────────────────────────────────────────────────────────
+
+  const simulateStep = useCallback(async (step: AutomationStep): Promise<void> => {
+    if (abortRef.current) throw new Error('Execução abortada');
 
     switch (step.type) {
       case 'open':
-        addLog('INFO', `Opening: ${step.path || '(empty path)'}`);
-        await new Promise(r => setTimeout(r, 800));
-        addLog('SUCCESS', `Launched: ${step.path}`);
+        addLog('INFO',    `Abrindo: ${step.path || '(caminho vazio)'}`);
+        await delay(800);
+        addLog('SUCCESS', `Lançado: ${step.path}`);
         break;
+
       case 'script':
-        addLog('INFO', `Executing script: ${step.path || '(empty path)'}`);
-        await new Promise(r => setTimeout(r, 1200));
-        addLog('SUCCESS', `Script completed: ${step.path}`);
+        addLog('INFO',    `Executando script: ${step.path || '(caminho vazio)'}`);
+        await delay(1200);
+        addLog('SUCCESS', `Script concluído: ${step.path}`);
         break;
+
       case 'mouse':
-        addLog('INFO', `Moving mouse to (${step.x}, ${step.y})`);
-        await new Promise(r => setTimeout(r, 300));
+        addLog('INFO', `Movendo mouse para (${step.x}, ${step.y})`);
+        await delay(300);
         break;
+
       case 'click':
-        addLog('INFO', `${step.button === 'right' ? 'Right' : 'Left'} click`);
-        await new Promise(r => setTimeout(r, 200));
+        addLog('INFO', `${step.button === 'right' ? 'Clique direito' : 'Clique esquerdo'}`);
+        await delay(200);
         break;
+
       case 'write':
-        addLog('INFO', `Typing: "${step.text}"`);
-        await new Promise(r => setTimeout(r, 500));
+        addLog('INFO', `Digitando: "${step.text}"`);
+        await delay(500);
         break;
+
       case 'delay':
-        addLog('INFO', `Waiting ${step.ms}ms...`);
-        await new Promise(r => setTimeout(r, Math.min(step.ms || 1000, 3000)));
+        addLog('INFO', `Aguardando ${step.ms}ms...`);
+        await delay(Math.min(step.ms ?? 1000, 3000));
         break;
+
       case 'loop':
-        for (let i = 0; i < (step.count || 1); i++) {
-          if (abortRef.current) throw new Error('Execution aborted');
-          addLog('INFO', `Loop iteration ${i + 1}/${step.count}`);
-          for (const s of step.steps || []) {
+        for (let i = 0; i < (step.count ?? 1); i++) {
+          if (abortRef.current) throw new Error('Execução abortada');
+          addLog('INFO', `Loop — iteração ${i + 1}/${step.count}`);
+          for (const s of step.steps ?? []) {
             await simulateStep(s);
           }
         }
         break;
     }
-  };
+  }, [addLog]);
 
   const executeAutomation = useCallback(async (auto: Automation) => {
     setIsRunning(true);
     abortRef.current = false;
-    addLog('SYSTEM', `═══ Executing: ${auto.name} ═══`);
+    addLog('SYSTEM', `═══ Executando: ${auto.name} ═══`);
 
     try {
       for (const step of auto.steps) {
         await simulateStep(step);
       }
-      addLog('SUCCESS', `═══ "${auto.name}" completed successfully ═══`);
-    } catch (err: any) {
-      addLog('ERROR', err.message || 'Execution failed');
+      addLog('SUCCESS', `═══ "${auto.name}" concluída com sucesso ═══`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha na execução';
+      addLog('ERROR', msg);
     } finally {
       setIsRunning(false);
     }
-  }, [addLog]);
+  }, [addLog, simulateStep]);
 
   const abortExecution = useCallback(() => {
     abortRef.current = true;
-    addLog('WARN', 'Abort signal sent...');
+    addLog('WARN', 'Sinal de abortar enviado...');
   }, [addLog]);
+
+  // ── Export / Import ──────────────────────────────────────────────────────────
 
   const exportAutomation = useCallback((auto: Automation) => {
-    const json = JSON.stringify({ name: auto.name, steps: auto.steps.map(({ id, ...rest }) => rest) }, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${auto.name.replace(/\s+/g, '_').toLowerCase()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addLog('SUCCESS', `Exported "${auto.name}" as JSON`);
+    // Remove IDs internos para o JSON exportado ficar limpo
+    const payload = {
+      name: auto.name,
+      steps: stripIds(auto.steps),
+    };
+    const json = JSON.stringify(payload, null, 2);
+    downloadJson(json, `${auto.name.replace(/\s+/g, '_').toLowerCase()}.json`);
+    addLog('SUCCESS', `Exportado "${auto.name}" como JSON`);
   }, [addLog]);
 
-  const setProfile = useCallback((name: string) => {
+  // ── Perfil ───────────────────────────────────────────────────────────────────
+
+  const switchProfile = useCallback((name: string) => {
     setCurrentProfile(name);
     localStorage.setItem(PROFILE_KEY, name);
-    addLog('INFO', `Switched to profile: ${name}`);
+    addLog('INFO', `Perfil alterado para: ${name}`);
   }, [addLog]);
 
   return {
-    automations, logs, isRunning, currentProfile,
-    saveAutomation, deleteAutomation, executeAutomation, abortExecution,
-    exportAutomation, addLog, clearLogs, setProfile,
+    automations,
+    logs,
+    isRunning,
+    currentProfile,
+    // ações
+    saveAutomation,
+    deleteAutomation,
+    executeAutomation,
+    abortExecution,
+    exportAutomation,
+    addLog,
+    clearLogs,
+    setProfile: switchProfile,
   };
+}
+
+// ─── Funções utilitárias internas ─────────────────────────────────────────────
+
+function delay(ms: number): Promise<void> {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function stripIds(steps: AutomationStep[]): Omit<AutomationStep, 'id'>[] {
+  return steps.map(({ id: _id, steps: sub, ...rest }) => ({
+    ...rest,
+    ...(sub ? { steps: stripIds(sub) } : {}),
+  }));
+}
+
+function downloadJson(json: string, filename: string): void {
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+  a.click();
+  URL.revokeObjectURL(url);
 }
