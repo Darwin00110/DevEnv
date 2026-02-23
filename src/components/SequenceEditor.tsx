@@ -66,6 +66,9 @@ export default function SequenceEditor({ automation, onSave, onClose }: Sequence
       createdAt: automation?.createdAt ?? now,
       updatedAt: now,
     });
+    steps.forEach(data => {
+      console.log(data)
+    });
   };
 
   // ── Importar JSON ────────────────────────────────────────────────────────

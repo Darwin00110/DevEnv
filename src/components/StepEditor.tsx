@@ -9,15 +9,15 @@ interface StepEditorProps {
   index: number;
   onChange: (step: AutomationStep) => void;
   onRemove: () => void;
+
 }
 
 
 const inputCls =
 'bg-background border border-border rounded px-2 py-1 text-xs text-foreground outline-none focus:border-primary transition-colors';
 
-export default function StepEditor({ step, index, onChange, onRemove }: StepEditorProps) {
+export default function StepEditor({ step, index, onChange, onRemove,  }: StepEditorProps) {
   const set = (patch: Partial<AutomationStep>) => onChange({ ...step, ...patch });
-  const [value, setValue] = useState("")
 
   return (
     <div className="flex items-start gap-2 p-3 rounded bg-secondary/50 border border-border group">
@@ -42,7 +42,7 @@ export default function StepEditor({ step, index, onChange, onRemove }: StepEdit
           <div className='flex flex-row'>
             <input
               className={`${inputCls} w-full`}
-              value={value}
+              value={step.path}
               onChange={e => set({ path: e.target.value })}
               placeholder={
                 step.type === 'open'
@@ -53,8 +53,11 @@ export default function StepEditor({ step, index, onChange, onRemove }: StepEdit
             <button className={`${inputCls}`} onClick={async () => {
               console.log(step.type)
               await window.electronAPI.GetPath(step.type).then((data) => {
-                console.log(data.saida)
-                setValue(data.saida)
+                if(data.saida == "Operação cancelada"){
+                  
+                }
+                step.path = data.saida
+                onChange(step)
               })
             }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" fill="none" /><path fill="#fff" d="M4.616 19q-.691 0-1.153-.462T3 17.384V6.616q0-.691.463-1.153T4.615 5h4.31q.323 0 .628.13q.305.132.522.349L11.596 7h7.789q.69 0 1.153.463T21 8.616v8.769q0 .69-.462 1.153T19.385 19zm0-1h14.769q.269 0 .442-.173t.173-.442v-8.77q0-.269-.173-.442T19.385 8h-8.19L9.366 6.173q-.096-.096-.202-.134Q9.06 6 8.946 6h-4.33q-.269 0-.442.173T4 6.616v10.769q0 .269.173.442t.443.173M4 18V6z" /></svg>
