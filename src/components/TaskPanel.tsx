@@ -79,7 +79,9 @@ export default function TaskPanel({ automations, isRunning, onExecute, onEdit, o
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => onEdit(auto)} className="p-1.5 rounded hover:bg-primary/20 text-foreground transition-colors">
+                    <button onClick={() => {
+                      onEdit(auto)
+                    }} className="p-1.5 rounded hover:bg-primary/20 text-foreground transition-colors">
                       <Pencil size={13} />
                     </button>
                   </TooltipTrigger>

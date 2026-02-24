@@ -22,10 +22,10 @@ interface SequenceEditorProps {
 }
 
 export default function SequenceEditor({ automation, onSave, onClose }: SequenceEditorProps) {
-  const [name, setName]   = useState(automation?.name ?? '');
+  const [name, setName] = useState(automation?.name ?? '');
   const [steps, setSteps] = useState<AutomationStep[]>(automation?.steps ?? []);
   const [error, setError] = useState('');
-  const fileRef           = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Manipulação de steps ─────────────────────────────────────────────────
 
@@ -59,15 +59,31 @@ export default function SequenceEditor({ automation, onSave, onClose }: Sequence
       return;
     }
     const now = Date.now();
-    onSave({
-      id:        automation?.id ?? createId(),
-      name:      name.trim(),
+    const automationToSave: Automation = {
+      id: automation?.id ?? createId(),
+      name: name.trim(),
       steps,
       createdAt: automation?.createdAt ?? now,
       updatedAt: now,
-    });
+    };
+    onSave(automationToSave);
     steps.forEach(data => {
       console.log(data)
+      console.log(automationToSave.id);
+      console.log(automationToSave.name);
+      console.log(automationToSave.createdAt);
+      window.electronAPI.SaveConfig({
+        type: data.type,
+        name: automationToSave.name,
+        id: automationToSave.id,
+        path: data.path,
+        x: data.x,
+        y: data.y,
+        button: data.button,
+        text: data.text,
+        time: data.ms,
+        LoopTime: data.count
+      });
     });
   };
 

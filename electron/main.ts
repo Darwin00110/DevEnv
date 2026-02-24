@@ -1,7 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
+import fs from 'fs/promises'
 import path from 'node:path'
+import Renderer from 'electron/renderer'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -21,6 +23,8 @@ process.env.APP_ROOT = path.join(__dirname, '..')
 export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
+const isDev = !app.isPackaged
+const pathJSON = isDev ? path.join(MAIN_DIST, 'config.json') : path.join(RENDERER_DIST, 'config.json')
 
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
@@ -80,10 +84,11 @@ const TaskUser: configUser = {
   },
 }
 
+console.log(TaskUser)
 
 function createWindow() {
   win = new BrowserWindow({
-    x: 600,
+    x: 740,
     y: 100,
     width: 700,
     height: 600,
@@ -132,7 +137,7 @@ ipcMain.handle('get:path', async (event, type) => {
   const resultado = await dialog.showOpenDialog({
     properties: ['openFile']
   })
-  if(resultado.canceled){
+  if (resultado.canceled) {
     return {
       saida: 'Operação cancelada'
     }
@@ -147,11 +152,11 @@ ipcMain.handle('get:path', async (event, type) => {
   }
 })
 
-ipcMain.handle('save:config', async (event, id, name, type, path, button, x, y, ms, count, text) => {
+ipcMain.on('save:config', async (event, config) => {
+  const {type, name, id, path, x, y, button, text, time, LoopTime } = config
   if (!TaskUser.Task) return
   TaskUser.Task.id = id
   TaskUser.Task.name = name
-
   if (type == "open") {
     if (TaskUser.Task.Program) TaskUser.Task.Program.Path = path ?? ""
   }
@@ -168,17 +173,35 @@ ipcMain.handle('save:config', async (event, id, name, type, path, button, x, y, 
     if (!TaskUser.Task.Mouse) return
     TaskUser.Task.Mouse.click = button
   }
-  if (type == "text") {
+  if (type == "write") {
     if (!TaskUser.Task.WriteText) return
     TaskUser.Task.WriteText.text = text
   }
   if (type == "delay") {
     if (!TaskUser.Task.Delay) return
-    TaskUser.Task.Delay.time = ms
+    TaskUser.Task.Delay.time = time
   }
   if (type == "loop") {
     if (!TaskUser.Task.Loop) return
-    TaskUser.Task.Loop.time = count
+    TaskUser.Task.Loop.time = LoopTime
+  }
+  try {
+    fs.access(pathJSON)
+    console.log("O trem ja existe")
+    const arquivo = await fs.readFile(pathJSON)
+    const Json = JSON.parse(arquivo.toString())
+    const idJSON = Json.Task.id
+    if (idJSON == id) {
+      Json.Task = TaskUser.Task
+      await fs.writeFile(pathJSON, JSON.stringify(Json, null, 2))
+    } else {
+      Json.Task = TaskUser.Task
+      await fs.writeFile(pathJSON, JSON.stringify(Json, null, 2))
+    }
+    console.log(Json.Task.id)
+  } catch(e){
+    console.log("O trem nn existe " + e)
+    await fs.writeFile(pathJSON, JSON.stringify(TaskUser, null, 2))
   }
 })
 
