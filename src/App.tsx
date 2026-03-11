@@ -15,14 +15,14 @@ const App = () => (
       <Toaster />
       <Sonner />
       
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           <Route path="/dev" element={<SequenceEditor automation={() => { }} onSave={() => { }} onClose={() => { }} />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
