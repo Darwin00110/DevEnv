@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import fs from "fs/promises";
 import path from "node:path";
+import { spawn } from "node:child_process";
 createRequire(import.meta.url);
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname$1, "..");
@@ -11,6 +12,9 @@ const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 const isDev = !app.isPackaged;
 const pathJSON = isDev ? path.join(MAIN_DIST, "config.json") : path.join(RENDERER_DIST, "config.json");
+const pathICON = isDev ? path.resolve(path.join(MAIN_DIST, "..", "icon", "icon.ico")) : path.join(RENDERER_DIST, "icon.ico");
+isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend")) : path.join(RENDERER_DIST, "backend");
+isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend", "OpenPrograms", "bin", "Debug", "net10.0", "OpenPrograms.exe")) : path.join(RENDERER_DIST, "backend", "OpenPrograms", "bin", "OpenPrograms.exe");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
 const TaskUser = {
@@ -21,6 +25,7 @@ const TaskUser = {
       Path: ""
     },
     Script: {
+      Stack: "Python",
       Path: ""
     },
     Mouse: {
@@ -39,14 +44,14 @@ const TaskUser = {
     }
   }
 };
-console.log(TaskUser);
 function createWindow() {
   win = new BrowserWindow({
+    fullscreen: true,
     x: 740,
+    icon: pathICON,
     y: 100,
     width: 700,
     height: 600,
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
       preload: path.join(__dirname$1, "preload.mjs")
     }
@@ -72,6 +77,46 @@ app.on("activate", () => {
     createWindow();
   }
 });
+function OpenPrograms(args, Path, stack) {
+  let pathBackend = path.resolve(Path);
+  stack = stack ?? "";
+  try {
+    fs.access(pathBackend);
+    console.log("O treco existe");
+  } catch (e) {
+    console.log("O treco nn existe");
+  }
+  if (args.toLowerCase() == "file") {
+    let processo = spawn(pathBackend);
+    processo.on("close", (code) => {
+      console.log("Processo finalizado com código: " + code);
+    });
+    processo.stderr.on("data", (data) => {
+      console.log("Erro: " + data);
+    });
+  }
+  if (args.toLowerCase() == "script") {
+    let verificacaoTipo = path.extname(pathBackend);
+    if (verificacaoTipo != ".py") {
+      console.log("O trem nn e python bacana");
+      return;
+    } else {
+      let processo = spawn(`${stack} ${pathBackend}`);
+      processo.on("close", (code) => {
+        console.log("Processo finalizado com código: " + code);
+      });
+      processo.stderr.on("data", (data) => {
+        console.log("Erro: " + data);
+      });
+    }
+  }
+}
+async function loadJSON() {
+  await fs.access(pathJSON);
+  const arquivo = await fs.readFile(pathJSON, "utf-8");
+  const json = JSON.parse(arquivo);
+  return json;
+}
 ipcMain.handle("get:path", async (event, type) => {
   var _a, _b;
   if (!((_a = TaskUser.Task) == null ? void 0 : _a.Program)) return;
@@ -127,22 +172,45 @@ ipcMain.on("save:config", async (event, config) => {
     TaskUser.Task.Loop.time = LoopTime;
   }
   try {
-    fs.access(pathJSON);
-    console.log("O trem ja existe");
-    const arquivo = await fs.readFile(pathJSON);
-    const Json = JSON.parse(arquivo.toString());
-    const idJSON = Json.Task.id;
-    if (idJSON == id) {
-      Json.Task = TaskUser.Task;
-      await fs.writeFile(pathJSON, JSON.stringify(Json, null, 2));
-    } else {
-      Json.Task = TaskUser.Task;
-      await fs.writeFile(pathJSON, JSON.stringify(Json, null, 2));
+    await fs.access(pathJSON);
+    const arquivo = await fs.readFile(pathJSON, "utf-8");
+    const json = JSON.parse(arquivo);
+    if (!json.Tasks) {
+      json.Tasks = [];
     }
-    console.log(Json.Task.id);
+    const index = json.Tasks.findIndex((t) => t.id === id);
+    if (index !== -1) {
+      json.Tasks[index] = TaskUser.Task;
+    } else {
+      json.Tasks.push(TaskUser.Task);
+    }
+    await fs.writeFile(pathJSON, JSON.stringify(json, null, 2));
   } catch (e) {
-    console.log("O trem nn existe " + e);
-    await fs.writeFile(pathJSON, JSON.stringify(TaskUser, null, 2));
+    const novo = {
+      Tasks: [TaskUser.Task]
+    };
+    await fs.writeFile(pathJSON, JSON.stringify(novo, null, 2));
+  }
+});
+ipcMain.on("config:play", async (event, name) => {
+  const JSONuser = await loadJSON();
+  let DataJSON = JSON.stringify(JSONuser, null, 3);
+  DataJSON = JSON.parse(DataJSON);
+  let ProcessoUser = null;
+  for (let i = 0; i < DataJSON.Tasks.length; i++) {
+    if (name == DataJSON.Tasks[i].name) {
+      ProcessoUser = DataJSON.Tasks[i];
+      console.log("Encontrei");
+      if (ProcessoUser.Program != "") {
+        OpenPrograms("File", ProcessoUser.Program.Path, "");
+      }
+      if (ProcessoUser.Script != "") {
+        OpenPrograms("script", ProcessoUser.Script.Path, "python");
+      }
+      break;
+    } else {
+      console.log("processo nn encontrado");
+    }
   }
 });
 app.whenReady().then(createWindow);

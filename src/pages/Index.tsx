@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Automation } from '@/lib/automation';
 import { useAutomationEngine } from '@/hooks/useAutomationEngine';
 import TerminalConsole from '@/components/TerminalConsole';

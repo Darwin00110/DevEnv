@@ -90,5 +90,9 @@
     "vite": "^5.4.19",
     "vitest": "^3.2.4"
   },
-  "main": "dist-electron/main.js"
+  "main": "dist-electron/main.js",
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

@@ -5,21 +5,24 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, HashRouter } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import SequenceEditor from "./components/SequenceEditor";
 
 const queryClient = new QueryClient();
-
+//NN ESQUECE DE TROCAR O BROWSERROUTER PARA HASHROUTER POR FAVOR SENÂO NN FUNCIONA O APP PARA DESKTOP
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <HashRouter>
+      
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
+          <Route path="/dev" element={<SequenceEditor automation={() => { }} onSave={() => { }} onClose={() => { }} />} />
         </Routes>
-      </HashRouter>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

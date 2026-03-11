@@ -62,7 +62,7 @@ export const ACTION_ICONS: Record<ActionType, string> = {
 
 export const ACTION_DESCRIPTIONS: Record<ActionType, string> = {
   open:   'Abre um programa (.exe) no computador',
-  script: 'Executa um script (.bat, .ps1, .py)',
+  script: 'Executa um script (.bat, .ps1, .py, .cpp)',
   mouse:  'Move o cursor para uma posição X, Y na tela',
   click:  'Realiza um clique esquerdo ou direito',
   write:  'Digita um texto automaticamente',

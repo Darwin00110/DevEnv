@@ -1,3 +1,76 @@
 {
-  "Task": "[object Object][object Object]"
+  "Tasks": [
+    {
+      "name": "caminho pro ceu",
+      "id": "037qzll5",
+      "Program": {
+        "Path": "C:\\Program Files\\Cheat Engine\\Cheat Engine.exe"
+      },
+      "Script": {
+        "Path": "C:\\Users\\Admin\\Desktop\\SCRIPTS\\Ferramenta-hacking\\x64tool\\release\\x32\\x32dbg.exe"
+      },
+      "Mouse": {
+        "x": 300,
+        "y": 197,
+        "click": "right"
+      },
+      "WriteText": {
+        "text": "eu pressionei perfeitamente"
+      },
+      "Delay": {
+        "time": 1030
+      },
+      "Loop": {
+        "time": 3
+      }
+    },
+    {
+      "name": "porta do céu",
+      "id": "vj9qbi2s",
+      "Program": {
+        "Path": "C:\\Program Files\\Cheat Engine\\Cheat Engine.exe"
+      },
+      "Script": {
+        "Path": "C:\\Users\\Admin\\Desktop\\SCRIPTS\\Ferramenta-hacking\\x64tool\\release\\x32\\x32dbg.exe"
+      },
+      "Mouse": {
+        "x": 300,
+        "y": 197,
+        "click": "right"
+      },
+      "WriteText": {
+        "text": "eu pressionei perfeitamente"
+      },
+      "Delay": {
+        "time": 1030
+      },
+      "Loop": {
+        "time": 3
+      }
+    },
+    {
+      "name": "Tarefa01",
+      "id": "ulq538v1",
+      "Program": {
+        "Path": "C:\\Users\\Admin\\AppData\\Local\\balena_etcher\\balenaEtcher.exe"
+      },
+      "Script": {
+        "Path": "C:\\Users\\Admin\\Desktop\\Aplicativos Removidos.html"
+      },
+      "Mouse": {
+        "x": 20,
+        "y": 30,
+        "click": "left"
+      },
+      "WriteText": {
+        "text": "sla"
+      },
+      "Delay": {
+        "time": 1000
+      },
+      "Loop": {
+        "time": 3
+      }
+    }
+  ]
 }

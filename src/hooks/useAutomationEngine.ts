@@ -141,6 +141,8 @@ export function useAutomationEngine() {
       for (const step of auto.steps) {
         await simulateStep(step);
       }
+      console.log(auto.name)
+      await window.electronAPI.ConfigPlay(auto.name)
       addLog('SUCCESS', `═══ "${auto.name}" concluída com sucesso ═══`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Falha na execução';
