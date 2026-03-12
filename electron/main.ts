@@ -440,8 +440,8 @@ ipcMain.on("get:stack", (event, stack: string) => {
     }
   }
 })
-teste("dir")
-//app.whenReady().then(createWindow)
+
+app.whenReady().then(createWindow)
 
 
 

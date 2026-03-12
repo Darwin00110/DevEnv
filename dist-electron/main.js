@@ -323,18 +323,6 @@ ipcMain.on("config:play", async (event, key) => {
     console.log("processo nn encontrado");
   }
 });
-async function teste(texto) {
-  const processo = spawn(`cmd.exe /c ${texto}`);
-  processo.stdout.on("data", (data) => {
-    console.log(`stdout: ${data}`);
-  });
-  processo.stderr.on("data", (data) => {
-    console.log(`stderr: ${data}`);
-  });
-  processo.on("close", (code) => {
-    console.log(`Processo finalizado com código: ${code}`);
-  });
-}
 ipcMain.on("get:stack", (event, stack) => {
   var _a, _b;
   if (stack == ".py" || stack == ".cs" || stack == ".cpp" || stack == ".c" || stack == ".bat" || stack == ".ps1") {
@@ -348,7 +336,7 @@ ipcMain.on("get:stack", (event, stack) => {
     }
   }
 });
-teste("dir");
+app.whenReady().then(createWindow);
 export {
   MAIN_DIST,
   RENDERER_DIST,
