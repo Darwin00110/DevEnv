@@ -1,0 +1,15 @@
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\bin\Debug\net10.0\Automation.exe
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\bin\Debug\net10.0\Automation.deps.json
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\bin\Debug\net10.0\Automation.runtimeconfig.json
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\bin\Debug\net10.0\Automation.dll
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\bin\Debug\net10.0\Automation.pdb
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.AssemblyInfoInputs.cache
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.AssemblyInfo.cs
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.sourcelink.json
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.dll
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\refint\Automation.dll
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.pdb
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\Automation.genruntimeconfig.cache
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net10.0\ref\Automation.dll

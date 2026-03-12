@@ -67,12 +67,12 @@ export default function SequenceEditor({ automation, onSave, onClose }: Sequence
       updatedAt: now,
     };
     onSave(automationToSave);
-    steps.forEach(data => {
+    steps.forEach(async data => {
       console.log(data)
       console.log(automationToSave.id);
       console.log(automationToSave.name);
       console.log(automationToSave.createdAt);
-      window.electronAPI.SaveConfig({
+      await window.electronAPI.SaveConfig({
         type: data.type,
         name: automationToSave.name,
         id: automationToSave.id,

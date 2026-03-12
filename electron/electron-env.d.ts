@@ -27,5 +27,6 @@ interface Window {
   electronAPI: ElectronAPI
   GetPath: (type: string) => Promise<saida>,
   SaveConfig: (id: string, name: string, type: string, path: string, button: string, x: number, y: number, ms: number, count: number, text: string) => void
-
+  ConfigPlay: (name: string) => void
+  GetStack: (stack: string) => void
 }

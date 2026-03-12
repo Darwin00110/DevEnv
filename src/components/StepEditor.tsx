@@ -2,8 +2,6 @@ import { AutomationStep, ACTION_ICONS, ACTION_LABELS, ACTION_DESCRIPTIONS } from
 import { X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useState } from 'react';
-import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { CallbackResponse, contentTracing } from 'electron';
 
 interface StepEditorProps {
   step: AutomationStep;
@@ -83,20 +81,34 @@ export default function StepEditor({ step, index, onChange, onRemove, }: StepEdi
           <div className='flex flex-col'>
             <div className='flex flex-row gap-2'>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
-                setStack(".py")
-                console.log(Stack)
+                const nextStack = ".py"
+                setStack(nextStack)
+                console.log("Olha a stack ai: " + nextStack)
+                window.electronAPI.GetStack(nextStack)
               }}>.py</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
-                setStack(".cpp")
+                const nextStack = ".cpp"
+                setStack(nextStack)
+                console.log("Olha a stack ai: " + nextStack)
+                window.electronAPI.GetStack(nextStack)
               }}>.cpp</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
-                setStack(".cs")
+                const nextStack = ".cs"
+                setStack(nextStack)
+                console.log("Olha a stack ai: " + nextStack)
+                window.electronAPI.GetStack(nextStack)
               }}>.cs</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
-                setStack(".c")
+                const nextStack = ".c"
+                setStack(nextStack)
+                console.log("Olha a stack ai: " + nextStack)
+                window.electronAPI.GetStack(nextStack)
               }}>.c</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
-                setStack(".ps1")
+                const nextStack = ".ps1"
+                setStack(nextStack)
+                console.log("Olha a stack ai: " + nextStack)
+                window.electronAPI.GetStack(nextStack)
               }}>.ps1</button>
 
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
@@ -148,14 +160,14 @@ export default function StepEditor({ step, index, onChange, onRemove, }: StepEdi
           <div className="flex items-center gap-2">
             <label className="text-[10px] text-muted-foreground">X:</label>
             <input
-              type="number"
+              type="text"
               className={`${inputCls} w-20`}
               value={step.x ?? 0}
               onChange={e => set({ x: Number(e.target.value) })}
             />
             <label className="text-[10px] text-muted-foreground">Y:</label>
             <input
-              type="number"
+              type="text"
               className={`${inputCls} w-20`}
               value={step.y ?? 0}
               onChange={e => set({ y: Number(e.target.value) })}
@@ -189,7 +201,7 @@ export default function StepEditor({ step, index, onChange, onRemove, }: StepEdi
         {step.type === 'delay' && (
           <div className="flex items-center gap-2">
             <input
-              type="number"
+              type="text"
               className={`${inputCls} w-24`}
               value={step.ms ?? 1000}
               min={0}
@@ -203,7 +215,7 @@ export default function StepEditor({ step, index, onChange, onRemove, }: StepEdi
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground">Repetir:</span>
             <input
-              type="number"
+              type="text"
               className={`${inputCls} w-16`}
               value={step.count ?? 1}
               min={1}

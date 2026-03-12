@@ -142,7 +142,7 @@ export function useAutomationEngine() {
         await simulateStep(step);
       }
       console.log(auto.name)
-      await window.electronAPI.ConfigPlay(auto.name)
+      await window.electronAPI.ConfigPlay(auto.id)
       addLog('SUCCESS', `═══ "${auto.name}" concluída com sucesso ═══`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Falha na execução';

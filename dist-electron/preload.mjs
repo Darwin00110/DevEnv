@@ -2,8 +2,9 @@
 const electron = require("electron");
 electron.contextBridge.exposeInMainWorld("electronAPI", {
   GetPath: (type) => electron.ipcRenderer.invoke("get:path", type),
-  SaveConfig: (id, name, type, path, button, x, y, ms, count, text) => electron.ipcRenderer.send("save:config", id, name, type, path, button, x, y, ms, count, text),
-  ConfigPlay: (name) => electron.ipcRenderer.send("config:play", name)
+  SaveConfig: (config) => electron.ipcRenderer.send("save:config", config),
+  ConfigPlay: (key) => electron.ipcRenderer.send("config:play", key),
+  GetStack: (stack) => electron.ipcRenderer.send("get:stack", stack)
   // You can expose other APTs you need here.
   // ...
 });

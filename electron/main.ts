@@ -5,6 +5,8 @@ import fs from 'fs/promises'
 import path from 'node:path'
 import Renderer from 'electron/renderer'
 import { exec, spawn } from 'node:child_process'
+import { CartesianAxis } from 'recharts'
+import { stderr } from 'node:process'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -28,7 +30,8 @@ const isDev = !app.isPackaged
 const pathJSON = isDev ? path.join(MAIN_DIST, 'config.json') : path.join(RENDERER_DIST, 'config.json')
 const pathICON = isDev ? path.resolve(path.join(MAIN_DIST, "..", "icon", 'icon.ico')) : path.join(RENDERER_DIST, 'icon.ico')
 const pathBACKEND = isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend")) : path.join(RENDERER_DIST, 'backend')
-const pathOpenPrograms = isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend", "OpenPrograms", "bin", "Debug", "net10.0", "OpenPrograms.exe")) : path.join(RENDERER_DIST, "backend", "OpenPrograms", "bin", "OpenPrograms.exe")
+const pathAutomation = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "bin", "Release", "net10.0", "win-x64", "publish", "Automation.exe")) : path.join(RENDERER_DIST, 'dist', 'Automation')
+
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
 let win: BrowserWindow | null
@@ -41,7 +44,7 @@ interface configUser {
       Path: string
     },
     Script?: {
-      Stack: "Python" | "python" | "C#" | "c#" | "C++" | "c++" | "C" | "c" | "bat"
+      Stack: ".py" | ".cs" | ".cpp" | ".c" | ".bat" | ".ps1"
       Path: string
     },
     Mouse?: {
@@ -69,7 +72,7 @@ const TaskUser: configUser = {
       Path: ''
     },
     Script: {
-      Stack: "Python",
+      Stack: ".py",
       Path: ''
     },
     Mouse: {
@@ -139,12 +142,6 @@ app.on('activate', () => {
 function OpenPrograms(args: string, Path: string, stack: string) {
   let pathBackend = path.resolve(Path)
   stack = stack ?? ""
-  try {
-    fs.access(pathBackend)
-    console.log("O treco existe")
-  } catch (e) {
-    console.log("O treco nn existe")
-  }
   if (args.toLowerCase() == "file") {
     let processo = spawn(pathBackend)
     processo.on("close", (code) => {
@@ -155,44 +152,115 @@ function OpenPrograms(args: string, Path: string, stack: string) {
     })
   }
   if (args.toLowerCase() == "script") {
-    let verificacaoTipo = path.extname(pathBackend)
-    if (verificacaoTipo != ".py") {
-      console.log("O trem nn e python bacana")
+    const verificacaoTipo = path.extname(pathBackend)
+    if (verificacaoTipo !== stack) {
+      console.log(`Extensão diferente: esperado ${stack}, veio ${verificacaoTipo}`)
       return
-    } else {
-      let processo = spawn(`${stack} ${pathBackend}`)
-      processo.on("close", (code) => {
-        console.log("Processo finalizado com código: " + code)
-      })
-      processo.stderr.on("data", (data) => {
-        console.log("Erro: " + data)
-      })
     }
+    let processo
+    if (stack === ".py") {
+      processo = spawn("python", [pathBackend])
+    } else if (stack === ".c") {
+      processo = spawn("gcc", [pathBackend])
+    } else if (stack === ".cs") {
+      processo = spawn("dotnet run", [pathBackend])
+    } else if (stack === ".cpp") {
+      processo = spawn("g++", [pathBackend])
+    } else if (stack === ".ps1") {
+      processo = spawn("powershell", ["-ExecutionPolicy", "Bypass", "-File", pathBackend])
+    } else if (stack === ".bat") {
+      processo = spawn("cmd", ["/c", pathBackend])
+    } else {
+      console.log(`Stack ${stack} ainda não suportada para execução`)
+      return
+    }
+
+    processo.on("close", (code) => {
+      console.log("Processo finalizado com código: " + code)
+    })
+    processo.stderr.on("data", (data) => {
+      console.log("Erro: " + data)
+    })
   }
 }
+
+function CallAutomationMouse(mode: string, x: string, y: string, button: string, delay: string) {
+  const processo = exec(`${pathAutomation} ${mode} ${x} ${y} ${button} ${delay}`, (error, stdout, stderr) => {
+    if (error) {
+      console.log(`Erro do treco aqui parceiro: ${error}`)
+    }
+    console.log(`stdout: ${stdout}`)
+  })
+}
+
+function CallAutomationKeyboard(mode: string, text: string, delay: string) {
+  exec(`${pathAutomation} ${mode} ${text} ${delay}`, (error, stdout) => {
+    if (error) {
+      console.log(`Erro do treco aqui parceiro: ${error}`)
+    }
+    console.log(`stdout: ${stdout}`)
+  })
+}
+
+
 async function loadJSON() {
   await fs.access(pathJSON)
 
   const arquivo = await fs.readFile(pathJSON, 'utf-8')
-  const json = JSON.parse(arquivo)
-  return json
+  try {
+    return JSON.parse(arquivo)
+  } catch {
+    const lastBrace = arquivo.lastIndexOf('}')
+    if (lastBrace !== -1) {
+      const trimmed = arquivo.slice(0, lastBrace + 1)
+      try {
+        const parsed = JSON.parse(trimmed)
+        await fs.writeFile(pathJSON, JSON.stringify(parsed, null, 2))
+        return parsed
+      } catch {
+        // fall through
+      }
+    }
+    const fallback = { Tasks: [] }
+    await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2))
+    return fallback
+  }
 }
 
 ipcMain.handle('get:path', async (event, type) => {
   if (!TaskUser.Task?.Program) return
   if (!TaskUser.Task?.Script) return
 
-  const resultado = await dialog.showOpenDialog({
-    properties: ['openFile']
-  })
-  if (resultado.canceled) {
-    return {
-      saida: 'Operação cancelada'
-    }
-  }
+  let resultado: Electron.OpenDialogReturnValue
   if (type == "open") {
+    resultado = await dialog.showOpenDialog(win ?? undefined, {
+      properties: ['openFile']
+    })
+    if (resultado.canceled) {
+      return {
+        saida: 'Operação cancelada'
+      }
+    }
     TaskUser.Task.Program.Path = resultado.filePaths[0]
   } else {
+    resultado = await dialog.showOpenDialog(win ?? undefined, {
+      properties: ['openFile'],
+      filters: [
+        {
+          name: 'Scripts',
+          extensions: ['py', 'cs', 'cpp', 'c', 'bat', 'ps1']
+        },
+        {
+          name: 'All Files',
+          extensions: ['*']
+        }
+      ]
+    })
+    if (resultado.canceled) {
+      return {
+        saida: 'Operação cancelada'
+      }
+    }
     TaskUser.Task.Script.Path = resultado.filePaths[0]
   }
   return {
@@ -202,36 +270,77 @@ ipcMain.handle('get:path', async (event, type) => {
 
 ipcMain.on('save:config', async (event, config) => {
   const { type, name, id, path, x, y, button, text, time, LoopTime } = config
-  if (!TaskUser.Task) return
-  TaskUser.Task.id = id
-  TaskUser.Task.name = name
-  if (type == "open") {
-    if (TaskUser.Task.Program) TaskUser.Task.Program.Path = path ?? ""
-  }
-  if (type == "script") {
-    if (!TaskUser.Task.Script) return
-    TaskUser.Task.Script.Path = path
-  }
-  if (type == "mouse") {
-    if (!TaskUser.Task.Mouse) return
-    TaskUser.Task.Mouse.x = x
-    TaskUser.Task.Mouse.y = y
-  }
-  if (type == "click") {
-    if (!TaskUser.Task.Mouse) return
-    TaskUser.Task.Mouse.click = button
-  }
-  if (type == "write") {
-    if (!TaskUser.Task.WriteText) return
-    TaskUser.Task.WriteText.text = text
-  }
-  if (type == "delay") {
-    if (!TaskUser.Task.Delay) return
-    TaskUser.Task.Delay.time = time
-  }
-  if (type == "loop") {
-    if (!TaskUser.Task.Loop) return
-    TaskUser.Task.Loop.time = LoopTime
+  if (!id) return
+
+  const defaultTask = () => ({
+    id,
+    name: name ?? '',
+    Program: { Path: '' },
+    Script: { Stack: '.py', Path: '' },
+    Mouse: { x: 0, y: 0, click: 'left' },
+    WriteText: { text: '' },
+    Delay: { time: 0 },
+    Loop: { time: 0 }
+  })
+
+  try {
+    await fs.access(pathJSON)
+
+    const arquivo = await fs.readFile(pathJSON, 'utf-8')
+    const json = JSON.parse(arquivo)
+
+    if (!json.Tasks) {
+      json.Tasks = []
+    }
+
+    const index = json.Tasks.findIndex((t: any) => t.id === id)
+    const task = index !== -1 ? json.Tasks[index] : defaultTask()
+
+    task.id = id
+    if (name !== undefined) task.name = name
+
+    if (type == "open") {
+      if (!task.Program) task.Program = { Path: '' }
+      if (path !== undefined) task.Program.Path = path ?? ""
+    }
+    if (type == "script") {
+      if (!task.Script) task.Script = { Stack: '.py', Path: '' }
+      if (path !== undefined) task.Script.Path = path ?? ""
+    }
+    if (type == "mouse") {
+      if (!task.Mouse) task.Mouse = { x: 0, y: 0, click: 'left' }
+      if (x !== undefined) task.Mouse.x = x
+      if (y !== undefined) task.Mouse.y = y
+    }
+    if (type == "click") {
+      if (!task.Mouse) task.Mouse = { x: 0, y: 0, click: 'left' }
+      if (button !== undefined) task.Mouse.click = button
+    }
+    if (type == "write") {
+      if (!task.WriteText) task.WriteText = { text: '' }
+      if (text !== undefined) task.WriteText.text = text ?? ""
+    }
+    if (type == "delay") {
+      if (!task.Delay) task.Delay = { time: 0 }
+      if (time !== undefined) task.Delay.time = time ?? 0
+    }
+    if (type == "loop") {
+      if (!task.Loop) task.Loop = { time: 0 }
+      if (LoopTime !== undefined) task.Loop.time = LoopTime ?? 0
+    }
+
+    if (index !== -1) {
+      json.Tasks[index] = task
+    } else {
+      json.Tasks.push(task)
+    }
+
+    await fs.writeFile(pathJSON, JSON.stringify(json, null, 2))
+    return
+  } catch (e) {
+    const novo = { Tasks: [defaultTask()] }
+    await fs.writeFile(pathJSON, JSON.stringify(novo, null, 2))
+    return
   }
   try {
     await fs.access(pathJSON)
@@ -266,47 +375,73 @@ ipcMain.on('save:config', async (event, config) => {
   }
 })
 
-ipcMain.on('config:play', async (event, name) => {
+ipcMain.on('config:play', async (event, key) => {
+  console.log(key)
   const JSONuser = await loadJSON()
   let DataJSON = JSON.stringify(JSONuser, null, 3)
   DataJSON = JSON.parse(DataJSON)
   let ProcessoUser = null
+  let found = false
   for (let i = 0; i < DataJSON.Tasks.length; i++) {
-    if (name == DataJSON.Tasks[i].name) {
-      ProcessoUser = DataJSON.Tasks[i]
-      console.log("Encontrei")
-      if (ProcessoUser.Program != "") {
-        OpenPrograms("File", ProcessoUser.Program.Path, "")
-      }
-      if (ProcessoUser.Script != "") {
-        OpenPrograms("script", ProcessoUser.Script.Path, "python")
+    const task = DataJSON.Tasks[i]
+    const keyStr = String(key ?? '')
+    const nameStr = String(task?.name ?? '')
+    const idStr = String(task?.id ?? '')
+    if (keyStr === idStr || keyStr.toLowerCase() === nameStr.toLowerCase()) {
+      ProcessoUser = task
+      found = true
+      const loopCountRaw = Number(ProcessoUser.Loop?.time ?? 1)
+      const loopCount = loopCountRaw > 0 ? loopCountRaw : 1
+      for (let i = 0; i < loopCount; i++) {
+        console.log("Encontrei")
+        if (ProcessoUser.Program?.Path) {
+          OpenPrograms("File", ProcessoUser.Program.Path, "")
+        }
+        if (ProcessoUser.Script?.Path) {
+          OpenPrograms("script", ProcessoUser.Script.Path, ProcessoUser.Script.Stack ?? ".py")
+        }
+        if (ProcessoUser.Mouse?.x != 0 && ProcessoUser.Mouse?.y != 0) {
+          CallAutomationMouse("mouse", ProcessoUser.Mouse.x, ProcessoUser.Mouse.y, ProcessoUser.Mouse.click, ProcessoUser.Delay?.time ?? 0)
+        }
+        if (ProcessoUser.WriteText?.text != "") {
+          CallAutomationKeyboard("write", ProcessoUser.WriteText.text, ProcessoUser.Delay?.time ?? 0)
+        }
       }
       break
-    } else {
-      console.log("processo nn encontrado")
     }
+  }
+  if (!found) {
+    console.log("processo nn encontrado")
   }
 })
 
-async function teste(name: string) {
-  const JSONuser = await loadJSON()
-  let DataJSON = JSON.stringify(JSONuser, null, 3)
-  DataJSON = JSON.parse(DataJSON)
-  let ProcessoUser = null
-  for (let i = 0; i < DataJSON.Tasks.length; i++) {
-    if (name == DataJSON.Tasks[i].name) {
-      ProcessoUser = DataJSON.Tasks[i]
-      console.log("Encontrei")
-      if (ProcessoUser.Program != "") {
-        OpenPrograms("File", ProcessoUser.Program.Path, "")
-      }
-      if (ProcessoUser.Script != "") {
-        OpenPrograms("script", ProcessoUser.Script.Path, "python")
-      }
-      break
-    } else {
-      console.log("processo nn encontrado")
+async function teste(texto: string) {
+  const processo = spawn(`cmd.exe /c ${texto}`)
+  processo.stdout.on("data", (data) => {
+    console.log(`stdout: ${data}`)
+  })
+  processo.stderr.on("data", (data) => {
+    console.log(`stderr: ${data}`)
+  })
+  processo.on("close", (code) => {
+    console.log(`Processo finalizado com código: ${code}`)
+  })
+}
+
+ipcMain.on("get:stack", (event, stack: string) => {
+  if (stack == ".py" || stack == ".cs" || stack == ".cpp" || stack == ".c" || stack == ".bat" || stack == ".ps1") {
+    if (TaskUser.Task?.Script) {
+      TaskUser.Task.Script.Stack = stack
+    }
+    console.log(stack)
+  } else {
+    if (TaskUser.Task?.Script) {
+      TaskUser.Task.Script.Stack = ".py"
     }
   }
-}
-app.whenReady().then(createWindow)
+})
+teste("dir")
+//app.whenReady().then(createWindow)
+
+
+

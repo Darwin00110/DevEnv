@@ -1,75 +1,53 @@
 {
   "Tasks": [
     {
-      "name": "caminho pro ceu",
-      "id": "037qzll5",
+      "id": "anffo5jf",
+      "name": "teste02",
       "Program": {
         "Path": "C:\\Program Files\\Cheat Engine\\Cheat Engine.exe"
       },
       "Script": {
-        "Path": "C:\\Users\\Admin\\Desktop\\SCRIPTS\\Ferramenta-hacking\\x64tool\\release\\x32\\x32dbg.exe"
+        "Stack": ".py",
+        "Path": ""
       },
       "Mouse": {
-        "x": 300,
-        "y": 197,
-        "click": "right"
-      },
-      "WriteText": {
-        "text": "eu pressionei perfeitamente"
-      },
-      "Delay": {
-        "time": 1030
-      },
-      "Loop": {
-        "time": 3
-      }
-    },
-    {
-      "name": "porta do céu",
-      "id": "vj9qbi2s",
-      "Program": {
-        "Path": "C:\\Program Files\\Cheat Engine\\Cheat Engine.exe"
-      },
-      "Script": {
-        "Path": "C:\\Users\\Admin\\Desktop\\SCRIPTS\\Ferramenta-hacking\\x64tool\\release\\x32\\x32dbg.exe"
-      },
-      "Mouse": {
-        "x": 300,
-        "y": 197,
-        "click": "right"
-      },
-      "WriteText": {
-        "text": "eu pressionei perfeitamente"
-      },
-      "Delay": {
-        "time": 1030
-      },
-      "Loop": {
-        "time": 3
-      }
-    },
-    {
-      "name": "Tarefa01",
-      "id": "ulq538v1",
-      "Program": {
-        "Path": "C:\\Users\\Admin\\AppData\\Local\\balena_etcher\\balenaEtcher.exe"
-      },
-      "Script": {
-        "Path": "C:\\Users\\Admin\\Desktop\\Aplicativos Removidos.html"
-      },
-      "Mouse": {
-        "x": 20,
-        "y": 30,
+        "x": 100,
+        "y": 800,
         "click": "left"
       },
       "WriteText": {
-        "text": "sla"
+        "text": ""
       },
       "Delay": {
         "time": 1000
       },
       "Loop": {
-        "time": 3
+        "time": 0
+      }
+    },
+    {
+      "id": "ibjey4bk",
+      "name": "teadsada",
+      "Program": {
+        "Path": ""
+      },
+      "Script": {
+        "Stack": ".py",
+        "Path": "C:\\Users\\Admin\\Desktop\\SCRIPTS\\Python\\teste.py"
+      },
+      "Mouse": {
+        "x": 300,
+        "y": 300,
+        "click": "left"
+      },
+      "WriteText": {
+        "text": ""
+      },
+      "Delay": {
+        "time": 0
+      },
+      "Loop": {
+        "time": 0
       }
     }
   ]

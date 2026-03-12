@@ -1,0 +1,5 @@
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net8.0-windows\Automation.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net8.0-windows\Automation.AssemblyInfoInputs.cache
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net8.0-windows\Automation.AssemblyInfo.cs
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net8.0-windows\Automation.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Desktop\SCRIPTS\DevEnv\DevEnv\backend\Automation\obj\Debug\net8.0-windows\Automation.sourcelink.json
