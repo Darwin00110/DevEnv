@@ -1,7 +1,6 @@
 # DevEnv
 
-DevEnv is a modern development environment designed to simplify common programming tasks and system automation.
-The application combines modern web technologies with native system integration, allowing developers to execute commands, automate workflows, and manage projects from a single interface.
+DevEnv is a modern development environment designed to simplify common programming tasks and system automation. The application combines modern web technologies with native system integration, allowing developers to execute commands, automate workflows, and manage projects from a single interface.
 
 ---
 
@@ -20,10 +19,12 @@ The project focuses on:
 
 ## Concept
 
-DevEnv combines multiple technologies to create a hybrid development environment:
+DevEnv is built as a hybrid desktop application that merges a web-based interface with a high‑performance native backend written in Go.
+
+It provides:
 
 * Modern Web Interface
-* Native System Command Execution
+* Native System Command Execution via Go
 * Task Automation
 * Interactive Terminal
 
@@ -36,19 +37,22 @@ DevEnv combines multiple technologies to create a hybrid development environment
 * React
 * TypeScript
 * TailwindCSS
+
+## Desktop Shell
+
 * Electron / Fenestra
 
-## Backend / System Integration
+## Backend
 
-* C#
-* .NET
-* ProcessStartInfo
-* Native system process execution
+* Go (Golang)
+* robotgo
+* os/exec
+* Native process and system control
 
 ## Communication Layer
 
-* IPC (Electron ↔ Backend)
-* External process execution
+* IPC (Electron ↔ Go backend)
+* External process execution and structured command routing
 
 ---
 
@@ -56,32 +60,46 @@ DevEnv combines multiple technologies to create a hybrid development environment
 
 ## System Architecture
 
-DevEnv follows a layered architecture separating the user interface, application logic, and system-level operations.
+DevEnv uses a layered architecture to separate presentation, orchestration, and system-level execution.
 
 ```
 React (User Interface)
         ↓
-Electron / Node (Bridge Layer)
+Electron / Fenestra (Bridge Layer)
         ↓
-C# Backend (.NET)
+        Go Backend (Core Engine)
         ↓
 Operating System
 ```
 
-## Architecture Benefits
+## Responsibilities by Layer
 
-* Clear separation of responsibilities
-* Modern UI built with web technologies
-* Native system integration
-* Better control over process execution
+### React (UI Layer)
+
+* Handles rendering and user interaction
+* Provides terminal interface and command input
+* Displays logs, output, and status messages
+
+### Electron / Fenestra (Bridge Layer)
+
+* Manages application window and lifecycle
+* Handles IPC between the UI and Go backend
+* Spawns and monitors backend processes
+
+### Go Backend (Core Engine)
+
+* Executes system commands
+* Automates OS-level tasks
+* Handles mouse and keyboard automation via robotgo
+* Provides command parsing and execution logic
 
 ---
 
-# Features
+# Key Features
 
 ## Integrated Terminal
 
-DevEnv includes an internal terminal that allows users to execute commands directly from the graphical interface.
+DevEnv includes a built-in terminal that allows users to execute commands directly from the graphical interface.
 
 Example commands:
 
@@ -92,44 +110,47 @@ Example commands:
 -open
 ```
 
-Terminal features include:
+Terminal capabilities:
 
 * Interactive command input
 * Terminal-style typing effect
 * Asynchronous command execution
-* Expandable command system
+* Expandable command system implemented in Go
 
 ---
 
-## System Process Execution
+## System Automation via Go
 
-The C# backend enables the application to execute operating system processes with greater reliability and control.
+The Go backend provides reliable and high-performance access to system resources.
 
 This enables:
 
 * Opening external applications
-* Running scripts
+* Running scripts and binaries
 * Automating development workflows
-* Managing system tools
+* Controlling mouse and keyboard input
+
+Go was chosen due to:
+
+* Native compilation
+* High performance
+* Easy distribution without requiring a runtime
 
 ---
 
-## Modern Interface
+## Modern User Interface
 
-The graphical interface is built using React and TailwindCSS.
+The graphical interface is built using React and TailwindCSS to provide a responsive and fluid development experience.
 
-The UI design prioritizes:
+UI goals:
 
 * Simplicity
 * Speed
-* Responsiveness
-* Immersive user experience
+* Minimal latency between command input and execution
 
 ---
 
 # Project Structure
-
-## Folder Organization
 
 ```
 DevEnv
@@ -141,9 +162,18 @@ DevEnv
 │   └─ styles
 │
 ├─ backend
-│   ├─ commands
-│   ├─ services
-│   └─ system
+│   ├─ core
+│   │   ├─ main.go
+│   │   ├─ parser.go
+│   │   └─ executor.go
+│   │
+│   ├─ automation
+│   │   ├─ clicked.go
+│   │   └─ movement.go
+│   │
+│   └─ services
+│       ├─ process.go
+│       └─ system.go
 │
 ├─ electron
 │   ├─ main
@@ -152,23 +182,23 @@ DevEnv
 └─ README.md
 ```
 
+This structure separates command parsing, automation logic, and system services to keep the backend maintainable and scalable.
+
 ---
 
-# Pictures
+# Command Flow Example
 
-## Application Interface
-
-![DevEnv Interface](assets/interface.png)
-
-## Integrated Terminal
-
-![DevEnv Terminal](assets/terminal.png)
-
-## Command Execution Example
-
-![DevEnv Commands](assets/commands.png)
-
-*(Replace these images with actual screenshots from your project.)*
+```
+User types command in UI
+        ↓
+React sends command via IPC
+        ↓
+Electron forwards to Go backend
+        ↓
+Go parses command and executes action
+        ↓
+Output returned to UI
+```
 
 ---
 
@@ -186,13 +216,13 @@ git clone https://github.com/your-username/devenv.git
 cd devenv
 ```
 
-## Install dependencies
+## Install frontend dependencies
 
 ```
 npm install
 ```
 
-## Run the application
+## Run the application in development mode
 
 ```
 npm run dev
@@ -200,19 +230,22 @@ npm run dev
 
 ---
 
-# Build
+# Building the Project
 
-## Build frontend
+## Build Frontend
 
 ```
 npm run build
 ```
 
-## Build backend (.NET)
+## Build Go Backend
 
 ```
-dotnet publish
+cd backend
+go build -o devenv-backend main.go
 ```
+
+This produces a native executable that Electron will spawn during runtime.
 
 ---
 
@@ -223,19 +256,19 @@ DevEnv aims to evolve into a powerful development environment capable of:
 * Centralizing development tools
 * Automating repetitive tasks
 * Providing fast command execution
-* Improving developer workflow
+* Integrating deeply with the operating system
 
 ---
 
 # Roadmap
 
-## Planned Features
+Planned features:
 
 * Command history
 * Terminal autocomplete
-* Plugin system
-* Integration with development tools
-* Configurable automation
+* Plugin system for extending Go commands
+* Integration with external development tools
+* Configurable automation profiles
 
 ---
 
@@ -249,11 +282,9 @@ To contribute:
 2. Create a feature branch
 3. Submit a Pull Request
 
+---
+# Images
 
-# 📸 Image
-<img width="1536" height="1024" alt="Logo futurista DevEnv com símbolos tecnológicos" src="https://github.com/user-attachments/assets/97189ca8-73ed-48ae-a53d-a7f73990a3a3" />
-<img width="1440" height="900" alt="Captura de tela 2026-03-02 165325" src="https://github.com/user-attachments/assets/f332c353-3e8b-4925-bf07-ea8a0272628f" />
-<img width="1440" height="900" alt="Captura de tela 2026-03-02 165345" src="https://github.com/user-attachments/assets/7260059c-91f4-4da5-a820-9474f48fd92f" />
 
 ---
 
