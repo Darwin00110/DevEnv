@@ -21,12 +21,18 @@ declare namespace NodeJS {
   }
 }
 
+type saida = { saida: string }
+
 // Used in Renderer process, expose in `preload.ts`
 interface Window {
   ipcRenderer: import('electron').IpcRenderer
-  electronAPI: ElectronAPI
-  GetPath: (type: string) => Promise<saida>,
-  SaveConfig: (id: string, name: string, type: string, path: string, button: string, x: number, y: number, ms: number, count: number, text: string) => void
-  ConfigPlay: (name: string) => void
-  GetStack: (stack: string) => void
+  electronAPI: {
+    GetPath: (type: string) => Promise<saida>
+    GetStack: (stack: string) => void
+    SaveConfig: (config: any) => void
+    DeleteConfig: (id: string) => void
+    ConfigPlay: (key: string) => void
+    LoadConfig: () => Promise<any>
+    Teste: () => Promise<any>
+  }
 }

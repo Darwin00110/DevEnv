@@ -67,24 +67,7 @@ export default function SequenceEditor({ automation, onSave, onClose }: Sequence
       updatedAt: now,
     };
     onSave(automationToSave);
-    steps.forEach(async data => {
-      console.log(data)
-      console.log(automationToSave.id);
-      console.log(automationToSave.name);
-      console.log(automationToSave.createdAt);
-      await window.electronAPI.SaveConfig({
-        type: data.type,
-        name: automationToSave.name,
-        id: automationToSave.id,
-        path: data.path,
-        x: data.x,
-        y: data.y,
-        button: data.button,
-        text: data.text,
-        time: data.ms,
-        LoopTime: data.count
-      });
-    });
+    window.electronAPI.SaveConfig(automationToSave);
   };
 
   // ── Importar JSON ────────────────────────────────────────────────────────

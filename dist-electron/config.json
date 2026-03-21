@@ -1,54 +1,32 @@
 {
   "Tasks": [
     {
-      "id": "anffo5jf",
-      "name": "teste02",
-      "Program": {
-        "Path": "C:\\Program Files\\Cheat Engine\\Cheat Engine.exe"
-      },
-      "Script": {
-        "Stack": ".py",
-        "Path": ""
-      },
-      "Mouse": {
-        "x": 100,
-        "y": 800,
-        "click": "left"
-      },
-      "WriteText": {
-        "text": ""
-      },
-      "Delay": {
-        "time": 1000
-      },
-      "Loop": {
-        "time": 0
-      }
-    },
-    {
-      "id": "ibjey4bk",
-      "name": "teadsada",
-      "Program": {
-        "Path": ""
-      },
-      "Script": {
-        "Stack": ".py",
-        "Path": "C:\\Users\\Admin\\Desktop\\SCRIPTS\\Python\\teste.py"
-      },
-      "Mouse": {
-        "x": 300,
-        "y": 300,
-        "click": "left"
-      },
-      "WriteText": {
-        "text": ""
-      },
-      "Delay": {
-        "time": 0
-      },
-      "Loop": {
-        "time": 0
-      }
+      "id": "u1qknhel",
+      "name": "porco voador02",
+      "steps": [
+        {
+          "id": "ui9kztph",
+          "type": "mouse",
+          "x": 700,
+          "y": 300
+        },
+        {
+          "id": "1xhz0yfb",
+          "type": "click",
+          "button": "right"
+        },
+        {
+          "id": "m41alee2",
+          "type": "delay",
+          "ms": 4000
+        },
+        {
+          "id": "xahyjsc4",
+          "type": "mouse",
+          "x": 200,
+          "y": 500
+        }
+      ]
     }
   ]
 }

@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import fs from "fs/promises";
 import path from "node:path";
-import { spawn, exec } from "node:child_process";
+import { exec, spawn } from "node:child_process";
 createRequire(import.meta.url);
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname$1, "..");
@@ -14,39 +14,23 @@ const isDev = !app.isPackaged;
 const pathJSON = isDev ? path.join(MAIN_DIST, "config.json") : path.join(RENDERER_DIST, "config.json");
 const pathICON = isDev ? path.resolve(path.join(MAIN_DIST, "..", "icon", "icon.ico")) : path.join(RENDERER_DIST, "icon.ico");
 const pathBACKEND = isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend")) : path.join(RENDERER_DIST, "backend");
-const pathAutomation = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "bin", "Release", "net10.0", "win-x64", "publish", "Automation.exe")) : path.join(RENDERER_DIST, "dist", "Automation");
+const pathAutomation = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Core", "main.exe")) : path.join(RENDERER_DIST, "backend", "Automation", "main.exe");
+const pathAutomationClicked = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Clicked", "main.exe")) : path.join(RENDERER_DIST, "backend", "Automation", "Clicked", "main.exe");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
 const TaskUser = {
   Task: {
-    name: "",
-    id: "",
     Program: {
       Path: ""
     },
     Script: {
       Stack: ".py",
       Path: ""
-    },
-    Mouse: {
-      x: 0,
-      y: 0,
-      click: "left"
-    },
-    WriteText: {
-      text: ""
-    },
-    Delay: {
-      time: 0
-    },
-    Loop: {
-      time: 0
     }
   }
 };
 function createWindow() {
   win = new BrowserWindow({
-    fullscreen: true,
     x: 740,
     icon: pathICON,
     y: 100,
@@ -120,41 +104,116 @@ function OpenPrograms(args, Path, stack) {
     });
   }
 }
-function CallAutomationMouse(mode, x, y, button, delay) {
-  exec(`${pathAutomation} ${mode} ${x} ${y} ${button} ${delay}`, (error, stdout, stderr2) => {
+function CallAutomationMouse(x, y, imagePath = "") {
+  exec(`${pathAutomation} ${x} ${y} ${imagePath}`, (error, stdout) => {
     if (error) {
       console.log(`Erro do treco aqui parceiro: ${error}`);
     }
     console.log(`stdout: ${stdout}`);
+  });
+}
+function CallAutomationMouseClicked(button) {
+  exec(`${pathAutomationClicked} ${button}`, (error) => {
+    if (error) {
+      console.log("Erro na chamada do click do mouse");
+    }
   });
 }
 function CallAutomationKeyboard(mode, text, delay) {
-  exec(`${pathAutomation} ${mode} ${text} ${delay}`, (error, stdout) => {
+  exec(`${pathAutomation} ${mode} ${text} ${delay}`, (error) => {
     if (error) {
       console.log(`Erro do treco aqui parceiro: ${error}`);
     }
-    console.log(`stdout: ${stdout}`);
   });
 }
 async function loadJSON() {
-  await fs.access(pathJSON);
-  const arquivo = await fs.readFile(pathJSON, "utf-8");
   try {
-    return JSON.parse(arquivo);
-  } catch {
-    const lastBrace = arquivo.lastIndexOf("}");
-    if (lastBrace !== -1) {
-      const trimmed = arquivo.slice(0, lastBrace + 1);
-      try {
-        const parsed = JSON.parse(trimmed);
-        await fs.writeFile(pathJSON, JSON.stringify(parsed, null, 2));
-        return parsed;
-      } catch {
+    const arquivo = await fs.readFile(pathJSON, "utf-8");
+    try {
+      return JSON.parse(arquivo);
+    } catch {
+      const lastBrace = arquivo.lastIndexOf("}");
+      if (lastBrace !== -1) {
+        const trimmed = arquivo.slice(0, lastBrace + 1);
+        try {
+          const parsed = JSON.parse(trimmed);
+          await fs.writeFile(pathJSON, JSON.stringify(parsed, null, 2));
+          return parsed;
+        } catch {
+        }
       }
+      const fallback = { Tasks: [] };
+      await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2));
+      return fallback;
     }
+  } catch {
     const fallback = { Tasks: [] };
     await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2));
     return fallback;
+  }
+}
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+function buildStepsFromLegacy(task) {
+  var _a, _b, _c, _d, _e, _f, _g;
+  const steps = [];
+  if ((_a = task == null ? void 0 : task.Program) == null ? void 0 : _a.Path) steps.push({ type: "open", path: task.Program.Path });
+  if ((_b = task == null ? void 0 : task.Script) == null ? void 0 : _b.Path) steps.push({ type: "script", path: task.Script.Path, stack: task.Script.Stack ?? ".py" });
+  if (((_c = task == null ? void 0 : task.Mouse) == null ? void 0 : _c.x) !== void 0 && ((_d = task == null ? void 0 : task.Mouse) == null ? void 0 : _d.y) !== void 0) {
+    steps.push({ type: "mouse", x: task.Mouse.x, y: task.Mouse.y });
+  }
+  if ((_e = task == null ? void 0 : task.Mouse) == null ? void 0 : _e.click) steps.push({ type: "click", button: task.Mouse.click });
+  if ((_f = task == null ? void 0 : task.WriteText) == null ? void 0 : _f.text) steps.push({ type: "write", text: task.WriteText.text });
+  if ((_g = task == null ? void 0 : task.Delay) == null ? void 0 : _g.time) steps.push({ type: "delay", ms: task.Delay.time });
+  return steps;
+}
+function normalizeTask(task) {
+  var _a;
+  const id = String((task == null ? void 0 : task.id) ?? "");
+  const name = String((task == null ? void 0 : task.name) ?? "");
+  const hasSteps = Array.isArray(task == null ? void 0 : task.steps);
+  const steps = hasSteps ? task.steps : buildStepsFromLegacy(task);
+  const loopCount = Number(((_a = task == null ? void 0 : task.Loop) == null ? void 0 : _a.time) ?? 0);
+  if (!hasSteps && loopCount > 1 && steps.length > 0) {
+    return { id, name, steps: [{ type: "loop", count: loopCount, steps }] };
+  }
+  return { id, name, steps };
+}
+async function executeStep(step) {
+  if (!step || !step.type) return;
+  switch (step.type) {
+    case "open":
+      if (step.path) OpenPrograms("file", String(step.path), "");
+      break;
+    case "script":
+      if (step.path) OpenPrograms("script", String(step.path), String(step.stack ?? ".py"));
+      break;
+    case "mouse":
+      if (step.x !== void 0 && step.y !== void 0) {
+        ({ x: Number(step.x), y: Number(step.y), has: true });
+        CallAutomationMouse(String(step.x), String(step.y), "left");
+      }
+      break;
+    case "click":
+      CallAutomationMouseClicked(String(step.button ?? "left"));
+      break;
+    case "write":
+      if (step.text) CallAutomationKeyboard("write", String(step.text), "0");
+      break;
+    case "delay":
+      await sleep(Number(step.ms ?? 0));
+      break;
+    case "loop": {
+      const count = Number(step.count ?? 1);
+      const safeCount = count > 0 ? count : 1;
+      for (let i = 0; i < safeCount; i++) {
+        for (const inner of step.steps ?? []) {
+          await executeStep(inner);
+        }
+      }
+      break;
+    }
   }
 }
 ipcMain.handle("get:path", async (event, type) => {
@@ -197,130 +256,61 @@ ipcMain.handle("get:path", async (event, type) => {
     saida: resultado.filePaths[0]
   };
 });
-ipcMain.on("save:config", async (event, config) => {
-  const { type, name, id, path: path2, x, y, button, text, time, LoopTime } = config;
-  if (!id) return;
-  const defaultTask = () => ({
-    id,
-    name: name ?? "",
-    Program: { Path: "" },
-    Script: { Stack: ".py", Path: "" },
-    Mouse: { x: 0, y: 0, click: "left" },
-    WriteText: { text: "" },
-    Delay: { time: 0 },
-    Loop: { time: 0 }
-  });
+ipcMain.on("save:config", async (event, automation) => {
+  if (!(automation == null ? void 0 : automation.id)) return;
   try {
-    await fs.access(pathJSON);
-    const arquivo = await fs.readFile(pathJSON, "utf-8");
-    const json = JSON.parse(arquivo);
-    if (!json.Tasks) {
-      json.Tasks = [];
-    }
-    const index = json.Tasks.findIndex((t) => t.id === id);
-    const task = index !== -1 ? json.Tasks[index] : defaultTask();
-    task.id = id;
-    if (name !== void 0) task.name = name;
-    if (type == "open") {
-      if (!task.Program) task.Program = { Path: "" };
-      if (path2 !== void 0) task.Program.Path = path2 ?? "";
-    }
-    if (type == "script") {
-      if (!task.Script) task.Script = { Stack: ".py", Path: "" };
-      if (path2 !== void 0) task.Script.Path = path2 ?? "";
-    }
-    if (type == "mouse") {
-      if (!task.Mouse) task.Mouse = { x: 0, y: 0, click: "left" };
-      if (x !== void 0) task.Mouse.x = x;
-      if (y !== void 0) task.Mouse.y = y;
-    }
-    if (type == "click") {
-      if (!task.Mouse) task.Mouse = { x: 0, y: 0, click: "left" };
-      if (button !== void 0) task.Mouse.click = button;
-    }
-    if (type == "write") {
-      if (!task.WriteText) task.WriteText = { text: "" };
-      if (text !== void 0) task.WriteText.text = text ?? "";
-    }
-    if (type == "delay") {
-      if (!task.Delay) task.Delay = { time: 0 };
-      if (time !== void 0) task.Delay.time = time ?? 0;
-    }
-    if (type == "loop") {
-      if (!task.Loop) task.Loop = { time: 0 };
-      if (LoopTime !== void 0) task.Loop.time = LoopTime ?? 0;
-    }
+    const task = normalizeTask(automation);
+    if (!task.id) return;
+    const json = await loadJSON();
+    if (!Array.isArray(json.Tasks)) json.Tasks = [];
+    const index = json.Tasks.findIndex((t) => String((t == null ? void 0 : t.id) ?? "") === task.id);
     if (index !== -1) {
-      json.Tasks[index] = task;
+      json.Tasks[index] = { ...json.Tasks[index], ...task };
     } else {
       json.Tasks.push(task);
     }
     await fs.writeFile(pathJSON, JSON.stringify(json, null, 2));
-    return;
   } catch (e) {
-    const novo = { Tasks: [defaultTask()] };
-    await fs.writeFile(pathJSON, JSON.stringify(novo, null, 2));
-    return;
+    console.log("Falha ao salvar config.json", e);
   }
+});
+ipcMain.handle("config:load", async () => {
   try {
-    await fs.access(pathJSON);
-    const arquivo = await fs.readFile(pathJSON, "utf-8");
-    const json = JSON.parse(arquivo);
-    if (!json.Tasks) {
-      json.Tasks = [];
-    }
-    const index = json.Tasks.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      json.Tasks[index] = TaskUser.Task;
-    } else {
-      json.Tasks.push(TaskUser.Task);
-    }
+    const json = await loadJSON();
+    return Array.isArray(json.Tasks) ? json.Tasks : [];
+  } catch (e) {
+    console.log("Falha ao carregar config.json", e);
+    return [];
+  }
+});
+ipcMain.on("config:delete", async (event, id) => {
+  const idStr = String(id ?? "");
+  if (!idStr) return;
+  try {
+    const json = await loadJSON();
+    if (!Array.isArray(json.Tasks)) json.Tasks = [];
+    json.Tasks = json.Tasks.filter((t) => String((t == null ? void 0 : t.id) ?? "") !== idStr);
     await fs.writeFile(pathJSON, JSON.stringify(json, null, 2));
   } catch (e) {
-    const novo = {
-      Tasks: [TaskUser.Task]
-    };
-    await fs.writeFile(pathJSON, JSON.stringify(novo, null, 2));
+    console.log("Falha ao deletar no config.json", e);
   }
 });
 ipcMain.on("config:play", async (event, key) => {
-  var _a, _b, _c, _d, _e, _f, _g, _h;
-  console.log(key);
   const JSONuser = await loadJSON();
-  let DataJSON = JSON.stringify(JSONuser, null, 3);
-  DataJSON = JSON.parse(DataJSON);
-  let ProcessoUser = null;
-  let found = false;
-  for (let i = 0; i < DataJSON.Tasks.length; i++) {
-    const task = DataJSON.Tasks[i];
-    const keyStr = String(key ?? "");
-    const nameStr = String((task == null ? void 0 : task.name) ?? "");
-    const idStr = String((task == null ? void 0 : task.id) ?? "");
-    if (keyStr === idStr || keyStr.toLowerCase() === nameStr.toLowerCase()) {
-      ProcessoUser = task;
-      found = true;
-      const loopCountRaw = Number(((_a = ProcessoUser.Loop) == null ? void 0 : _a.time) ?? 1);
-      const loopCount = loopCountRaw > 0 ? loopCountRaw : 1;
-      for (let i2 = 0; i2 < loopCount; i2++) {
-        console.log("Encontrei");
-        if ((_b = ProcessoUser.Program) == null ? void 0 : _b.Path) {
-          OpenPrograms("File", ProcessoUser.Program.Path, "");
-        }
-        if ((_c = ProcessoUser.Script) == null ? void 0 : _c.Path) {
-          OpenPrograms("script", ProcessoUser.Script.Path, ProcessoUser.Script.Stack ?? ".py");
-        }
-        if (((_d = ProcessoUser.Mouse) == null ? void 0 : _d.x) != 0 && ((_e = ProcessoUser.Mouse) == null ? void 0 : _e.y) != 0) {
-          CallAutomationMouse("mouse", ProcessoUser.Mouse.x, ProcessoUser.Mouse.y, ProcessoUser.Mouse.click, ((_f = ProcessoUser.Delay) == null ? void 0 : _f.time) ?? 0);
-        }
-        if (((_g = ProcessoUser.WriteText) == null ? void 0 : _g.text) != "") {
-          CallAutomationKeyboard("write", ProcessoUser.WriteText.text, ((_h = ProcessoUser.Delay) == null ? void 0 : _h.time) ?? 0);
-        }
-      }
-      break;
-    }
-  }
-  if (!found) {
+  const tasks = Array.isArray(JSONuser.Tasks) ? JSONuser.Tasks : [];
+  const keyStr = String(key ?? "");
+  const task = tasks.find((t) => {
+    const nameStr = String((t == null ? void 0 : t.name) ?? "");
+    const idStr = String((t == null ? void 0 : t.id) ?? "");
+    return keyStr === idStr || keyStr.toLowerCase() === nameStr.toLowerCase();
+  });
+  if (!task) {
     console.log("processo nn encontrado");
+    return;
+  }
+  const normalized = normalizeTask(task);
+  for (const step of normalized.steps ?? []) {
+    await executeStep(step);
   }
 });
 ipcMain.on("get:stack", (event, stack) => {
@@ -329,7 +319,6 @@ ipcMain.on("get:stack", (event, stack) => {
     if ((_a = TaskUser.Task) == null ? void 0 : _a.Script) {
       TaskUser.Task.Script.Stack = stack;
     }
-    console.log(stack);
   } else {
     if ((_b = TaskUser.Task) == null ? void 0 : _b.Script) {
       TaskUser.Task.Script.Stack = ".py";

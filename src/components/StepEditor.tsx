@@ -16,7 +16,6 @@ const inputCls =
 
 export default function StepEditor({ step, index, onChange, onRemove, }: StepEditorProps) {
   const set = (patch: Partial<AutomationStep>) => onChange({ ...step, ...patch });
-  const [Stack, setStack] = useState("")
   const [DisabledInputHelp, setDisabledInputHelp] = useState(false)
   const [Info, setInfo] = useState(false)
   const [valueHELP, setValueHELP] = useState("")
@@ -63,7 +62,6 @@ export default function StepEditor({ step, index, onChange, onRemove, }: StepEdi
               }
             />
             <button className={`${inputCls}`} onClick={async () => {
-              console.log(step.type)
               await window.electronAPI.GetPath(step.type).then((data) => {
                 if (data.saida == "Operação cancelada") {
                   return
@@ -77,38 +75,28 @@ export default function StepEditor({ step, index, onChange, onRemove, }: StepEdi
           </div>
         )}
 
-        {step.type === 'script' && (
+            {step.type === 'script' && (
           <div className='flex flex-col'>
             <div className='flex flex-row gap-2'>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
                 const nextStack = ".py"
-                setStack(nextStack)
-                console.log("Olha a stack ai: " + nextStack)
-                window.electronAPI.GetStack(nextStack)
+                set({ stack: nextStack })
               }}>.py</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
                 const nextStack = ".cpp"
-                setStack(nextStack)
-                console.log("Olha a stack ai: " + nextStack)
-                window.electronAPI.GetStack(nextStack)
+                set({ stack: nextStack })
               }}>.cpp</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
                 const nextStack = ".cs"
-                setStack(nextStack)
-                console.log("Olha a stack ai: " + nextStack)
-                window.electronAPI.GetStack(nextStack)
+                set({ stack: nextStack })
               }}>.cs</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
                 const nextStack = ".c"
-                setStack(nextStack)
-                console.log("Olha a stack ai: " + nextStack)
-                window.electronAPI.GetStack(nextStack)
+                set({ stack: nextStack })
               }}>.c</button>
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {
                 const nextStack = ".ps1"
-                setStack(nextStack)
-                console.log("Olha a stack ai: " + nextStack)
-                window.electronAPI.GetStack(nextStack)
+                set({ stack: nextStack })
               }}>.ps1</button>
 
               <button className='border-2 border-green-950 bg-background rounded-lg pl-3 pr-3 focus:border-green-600 hover:border-green-400 transition-colors duration-300' onClick={() => {

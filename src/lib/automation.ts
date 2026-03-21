@@ -9,6 +9,8 @@ export interface AutomationStep {
   type: ActionType;
   // open / script
   path?: string;
+  // script stack
+  stack?: '.py' | '.cs' | '.cpp' | '.c' | '.bat' | '.ps1';
   // mouse
   x?: number;
   y?: number;
@@ -84,7 +86,7 @@ export function createStep(type: ActionType): AutomationStep {
   const base: AutomationStep = { id: createId(), type };
   switch (type) {
     case 'open':   return { ...base, path: '' };
-    case 'script': return { ...base, path: '' };
+    case 'script': return { ...base, path: '', stack: '.py' };
     case 'mouse':  return { ...base, x: 0, y: 0 };
     case 'click':  return { ...base, button: 'left' };
     case 'write':  return { ...base, text: '' };

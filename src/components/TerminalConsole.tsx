@@ -19,21 +19,11 @@ const LEVEL_COLORS: Record<string, string> = {
   SYSTEM: 'text-terminal-cyan',
 };
 
-export default function TerminalConsole({ logs, isRunning, onAbort, onClear}: TerminalConsoleProps) {
+export default function TerminalConsole({ logs, isRunning, onAbort, onClear, onCommand }: TerminalConsoleProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [showHelp, setShowHelp] = useState(false);
-  const onTerminalCommand = (command: string) => {
-    console.log("Em produção ainda otario")
-  }
-  
-  const onCommand = (command: string) => {
-    if(command == "help".toLowerCase()){
-      setShowHelp(true)
-    } else {
 
-    }
-  }
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
@@ -42,6 +32,9 @@ export default function TerminalConsole({ logs, isRunning, onAbort, onClear}: Te
     if (e.key === 'Enter') {
       const val = inputRef.current?.value.trim();
       if (val) {
+        if (val.toLowerCase() === 'help') {
+          setShowHelp(true);
+        }
         onCommand(val);
         if (inputRef.current) inputRef.current.value = '';
       }

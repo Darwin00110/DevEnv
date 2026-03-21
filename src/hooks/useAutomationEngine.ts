@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Automation, AutomationStep, LogEntry, LogLevel, createId } from '@/lib/automation';
 
 // ─── Constantes de storage ────────────────────────────────────────────────────
@@ -47,6 +47,32 @@ export function useAutomationEngine() {
 
   const abortRef = useRef(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const tasks = await window.electronAPI.LoadConfig();
+        if (cancelled) return;
+        if (Array.isArray(tasks) && tasks.length > 0) {
+          const mapped = tasks.map((t: any) => ({
+            id: String(t?.id ?? createId()),
+            name: String(t?.name ?? 'Sem nome'),
+            steps: Array.isArray(t?.steps) ? t.steps : [],
+            createdAt: Number(t?.createdAt ?? Date.now()),
+            updatedAt: Number(t?.updatedAt ?? Date.now()),
+          }));
+          setAutomations(mapped);
+          persistAutomations(mapped);
+        }
+      } catch (e) {
+        console.error('[DevEnv] Falha ao carregar config.json:', e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // ── Logs ────────────────────────────────────────────────────────────────────
 
   const addLog = useCallback((level: LogLevel, message: string) => {
@@ -77,6 +103,7 @@ export function useAutomationEngine() {
       const auto = prev.find(a => a.id === id);
       const next = prev.filter(a => a.id !== id);
       persistAutomations(next);
+      window.electronAPI.DeleteConfig(id);
       if (auto) addLog('INFO', `Automação "${auto.name}" excluída`);
       return next;
     });
@@ -141,7 +168,6 @@ export function useAutomationEngine() {
       for (const step of auto.steps) {
         await simulateStep(step);
       }
-      console.log(auto.name)
       await window.electronAPI.ConfigPlay(auto.id)
       addLog('SUCCESS', `═══ "${auto.name}" concluída com sucesso ═══`);
     } catch (err: unknown) {
