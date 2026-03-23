@@ -1,13 +1,1 @@
-"use strict";
-const electron = require("electron");
-electron.contextBridge.exposeInMainWorld("electronAPI", {
-  GetPath: (type) => electron.ipcRenderer.invoke("get:path", type),
-  GetStack: (stack) => electron.ipcRenderer.send("get:stack", stack),
-  SaveConfig: (config) => electron.ipcRenderer.send("save:config", config),
-  DeleteConfig: (id) => electron.ipcRenderer.send("config:delete", id),
-  ConfigPlay: (key) => electron.ipcRenderer.send("config:play", key),
-  LoadConfig: () => electron.ipcRenderer.invoke("config:load"),
-  Teste: () => electron.ipcRenderer.invoke("teste")
-  // You can expose other APTs you need here.
-  // ...
-});
+"use strict";const n=require("electron");n.contextBridge.exposeInMainWorld("electronAPI",{GetPath:e=>n.ipcRenderer.invoke("get:path",e),GetStack:e=>n.ipcRenderer.send("get:stack",e),SaveConfig:e=>n.ipcRenderer.send("save:config",e),DeleteConfig:e=>n.ipcRenderer.send("config:delete",e),ConfigPlay:e=>n.ipcRenderer.send("config:play",e),LoadConfig:()=>n.ipcRenderer.invoke("config:load"),Teste:()=>n.ipcRenderer.invoke("teste")});

@@ -1,24 +1,17 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-import fs from "fs/promises";
-import path from "node:path";
-import { exec, spawn } from "node:child_process";
-createRequire(import.meta.url);
-const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname$1, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-const isDev = !app.isPackaged;
-const pathJSON = isDev ? path.join(MAIN_DIST, "config.json") : path.join(RENDERER_DIST, "config.json");
-const pathICON = isDev ? path.resolve(path.join(MAIN_DIST, "..", "icon", "icon.ico")) : path.join(RENDERER_DIST, "icon.ico");
-const pathBACKEND = isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend")) : path.join(RENDERER_DIST, "backend");
-const pathAutomation = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Core", "main.exe")) : path.join(RENDERER_DIST, "backend", "Automation", "main.exe");
-const pathAutomationClicked = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Clicked", "main.exe")) : path.join(RENDERER_DIST, "backend", "Automation", "Clicked", "main.exe");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
-let win;
-const TaskUser = {
+import { app as y, BrowserWindow as j, ipcMain as g, dialog as v } from "electron";
+import { createRequire as $ } from "node:module";
+import { fileURLToPath as F } from "node:url";
+import u from "fs/promises";
+import t from "node:path";
+import { exec as P, spawn as d } from "node:child_process";
+$(import.meta.url);
+const O = t.dirname(F(import.meta.url));
+process.env.APP_ROOT = t.join(O, "..");
+const T = process.env.VITE_DEV_SERVER_URL, x = t.join(process.env.APP_ROOT, "dist-electron"), f = t.join(process.env.APP_ROOT, "dist"), h = !y.isPackaged, _ = t.join(process.resourcesPath), m = h ? t.join(x, "config.json") : t.join(f, "config.json"), D = h ? t.resolve(t.join(x, "..", "icon", "icon.ico")) : t.join(f, "icon.ico"), b = h ? t.resolve(t.join(x, "..", "backend")) : t.join(f, "backend"), L = h ? t.resolve(t.join(b, "Automation", "Core", "main.exe")) : t.join(f, "backend", "Automation", "main.exe"), I = h ? t.resolve(t.join(b, "Automation", "Clicked", "main.exe")) : t.join(f, "backend", "Automation", "Clicked", "main.exe"), J = h ? t.resolve(t.join(b, "Automation", "Core", "Write", "main.exe")) : t.join(f, "backend", "Automation", "Core", "Write", "main.exe");
+process.env.VITE_PUBLIC = T ? t.join(process.env.APP_ROOT, "public") : f;
+console.log(_);
+let l;
+const p = {
   Task: {
     Program: {
       Path: ""
@@ -29,210 +22,161 @@ const TaskUser = {
     }
   }
 };
-function createWindow() {
-  win = new BrowserWindow({
+function C() {
+  l = new j({
     x: 740,
-    icon: pathICON,
+    icon: D,
     y: 100,
     width: 700,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname$1, "preload.mjs")
+      preload: t.join(O, "preload.mjs")
     }
-  });
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-    win.webContents.openDevTools();
-  } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
-  }
+  }), l.webContents.on("did-finish-load", () => {
+    l == null || l.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  }), T ? (l.loadURL(T), l.webContents.openDevTools()) : l.loadFile(t.join(f, "index.html"));
 }
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-    win = null;
-  }
+y.on("window-all-closed", () => {
+  process.platform !== "darwin" && (y.quit(), l = null);
 });
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+y.on("activate", () => {
+  j.getAllWindows().length === 0 && C();
 });
-function OpenPrograms(args, Path, stack) {
-  let pathBackend = path.resolve(Path);
-  stack = stack ?? "";
-  if (args.toLowerCase() == "file") {
-    let processo = spawn(pathBackend);
-    processo.on("close", (code) => {
-      console.log("Processo finalizado com código: " + code);
-    });
-    processo.stderr.on("data", (data) => {
-      console.log("Erro: " + data);
+function A(e, n, o) {
+  let i = t.resolve(n);
+  if (o = o ?? "", e.toLowerCase() == "file") {
+    let r = d(i);
+    r.on("close", (c) => {
+      console.log("Processo finalizado com código: " + c);
+    }), r.stderr.on("data", (c) => {
+      console.log("Erro: " + c);
     });
   }
-  if (args.toLowerCase() == "script") {
-    const verificacaoTipo = path.extname(pathBackend);
-    if (verificacaoTipo !== stack) {
-      console.log(`Extensão diferente: esperado ${stack}, veio ${verificacaoTipo}`);
+  if (e.toLowerCase() == "script") {
+    const r = t.extname(i);
+    if (r !== o) {
+      console.log(`Extensão diferente: esperado ${o}, veio ${r}`);
       return;
     }
-    let processo;
-    if (stack === ".py") {
-      processo = spawn("python", [pathBackend]);
-    } else if (stack === ".c") {
-      processo = spawn("gcc", [pathBackend]);
-    } else if (stack === ".cs") {
-      processo = spawn("dotnet run", [pathBackend]);
-    } else if (stack === ".cpp") {
-      processo = spawn("g++", [pathBackend]);
-    } else if (stack === ".ps1") {
-      processo = spawn("powershell", ["-ExecutionPolicy", "Bypass", "-File", pathBackend]);
-    } else if (stack === ".bat") {
-      processo = spawn("cmd", ["/c", pathBackend]);
-    } else {
-      console.log(`Stack ${stack} ainda não suportada para execução`);
+    let c;
+    if (o === ".py")
+      c = d("python", [i]);
+    else if (o === ".c")
+      c = d("gcc", [i]);
+    else if (o === ".cs")
+      c = d("dotnet run", [i]);
+    else if (o === ".cpp")
+      c = d("g++", [i]);
+    else if (o === ".ps1")
+      c = d("powershell", ["-ExecutionPolicy", "Bypass", "-File", i]);
+    else if (o === ".bat")
+      c = d("cmd", ["/c", i]);
+    else {
+      console.log(`Stack ${o} ainda não suportada para execução`);
       return;
     }
-    processo.on("close", (code) => {
-      console.log("Processo finalizado com código: " + code);
-    });
-    processo.stderr.on("data", (data) => {
-      console.log("Erro: " + data);
+    c.on("close", (a) => {
+      console.log("Processo finalizado com código: " + a);
+    }), c.stderr.on("data", (a) => {
+      console.log("Erro: " + a);
     });
   }
 }
-function CallAutomationMouse(x, y, imagePath = "") {
-  exec(`${pathAutomation} ${x} ${y} ${imagePath}`, (error, stdout) => {
-    if (error) {
-      console.log(`Erro do treco aqui parceiro: ${error}`);
-    }
-    console.log(`stdout: ${stdout}`);
+function M(e, n, o = "") {
+  P(`${L} ${e} ${n} ${o}`, (i, r) => {
+    i && console.log(`Erro do treco aqui parceiro: ${i}`), console.log(`stdout: ${r}`);
   });
 }
-function CallAutomationMouseClicked(button) {
-  exec(`${pathAutomationClicked} ${button}`, (error) => {
-    if (error) {
-      console.log("Erro na chamada do click do mouse");
-    }
+function V(e) {
+  P(`${I} ${e}`, (n) => {
+    n && console.log("Erro na chamada do click do mouse");
   });
 }
-function CallAutomationKeyboard(mode, text, delay) {
-  exec(`${pathAutomation} ${mode} ${text} ${delay}`, (error) => {
-    if (error) {
-      console.log(`Erro do treco aqui parceiro: ${error}`);
-    }
+function W(e) {
+  console.log("to chegando aqui"), P(`${J} ${e}`, (n, o) => {
+    n && console.log(`Erro do treco aqui parceiro: ${n}`), console.log(`Saida: ${o}`);
   });
 }
-async function loadJSON() {
+async function w() {
   try {
-    const arquivo = await fs.readFile(pathJSON, "utf-8");
+    const e = await u.readFile(m, "utf-8");
     try {
-      return JSON.parse(arquivo);
+      return JSON.parse(e);
     } catch {
-      const lastBrace = arquivo.lastIndexOf("}");
-      if (lastBrace !== -1) {
-        const trimmed = arquivo.slice(0, lastBrace + 1);
+      const n = e.lastIndexOf("}");
+      if (n !== -1) {
+        const i = e.slice(0, n + 1);
         try {
-          const parsed = JSON.parse(trimmed);
-          await fs.writeFile(pathJSON, JSON.stringify(parsed, null, 2));
-          return parsed;
+          const r = JSON.parse(i);
+          return await u.writeFile(m, JSON.stringify(r, null, 2)), r;
         } catch {
         }
       }
-      const fallback = { Tasks: [] };
-      await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2));
-      return fallback;
+      const o = { Tasks: [] };
+      return await u.writeFile(m, JSON.stringify(o, null, 2)), o;
     }
   } catch {
-    const fallback = { Tasks: [] };
-    await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2));
-    return fallback;
+    const e = { Tasks: [] };
+    return await u.writeFile(m, JSON.stringify(e, null, 2)), e;
   }
 }
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function q(e) {
+  return new Promise((n) => setTimeout(n, e));
 }
-function buildStepsFromLegacy(task) {
-  var _a, _b, _c, _d, _e, _f, _g;
-  const steps = [];
-  if ((_a = task == null ? void 0 : task.Program) == null ? void 0 : _a.Path) steps.push({ type: "open", path: task.Program.Path });
-  if ((_b = task == null ? void 0 : task.Script) == null ? void 0 : _b.Path) steps.push({ type: "script", path: task.Script.Path, stack: task.Script.Stack ?? ".py" });
-  if (((_c = task == null ? void 0 : task.Mouse) == null ? void 0 : _c.x) !== void 0 && ((_d = task == null ? void 0 : task.Mouse) == null ? void 0 : _d.y) !== void 0) {
-    steps.push({ type: "mouse", x: task.Mouse.x, y: task.Mouse.y });
-  }
-  if ((_e = task == null ? void 0 : task.Mouse) == null ? void 0 : _e.click) steps.push({ type: "click", button: task.Mouse.click });
-  if ((_f = task == null ? void 0 : task.WriteText) == null ? void 0 : _f.text) steps.push({ type: "write", text: task.WriteText.text });
-  if ((_g = task == null ? void 0 : task.Delay) == null ? void 0 : _g.time) steps.push({ type: "delay", ms: task.Delay.time });
-  return steps;
+function B(e) {
+  var o, i, r, c, a, s, S;
+  const n = [];
+  return (o = e == null ? void 0 : e.Program) != null && o.Path && n.push({ type: "open", path: e.Program.Path }), (i = e == null ? void 0 : e.Script) != null && i.Path && n.push({ type: "script", path: e.Script.Path, stack: e.Script.Stack ?? ".py" }), ((r = e == null ? void 0 : e.Mouse) == null ? void 0 : r.x) !== void 0 && ((c = e == null ? void 0 : e.Mouse) == null ? void 0 : c.y) !== void 0 && n.push({ type: "mouse", x: e.Mouse.x, y: e.Mouse.y }), (a = e == null ? void 0 : e.Mouse) != null && a.click && n.push({ type: "click", button: e.Mouse.click }), (s = e == null ? void 0 : e.WriteText) != null && s.text && n.push({ type: "write", text: e.WriteText.text }), (S = e == null ? void 0 : e.Delay) != null && S.time && n.push({ type: "delay", ms: e.Delay.time }), n;
 }
-function normalizeTask(task) {
-  var _a;
-  const id = String((task == null ? void 0 : task.id) ?? "");
-  const name = String((task == null ? void 0 : task.name) ?? "");
-  const hasSteps = Array.isArray(task == null ? void 0 : task.steps);
-  const steps = hasSteps ? task.steps : buildStepsFromLegacy(task);
-  const loopCount = Number(((_a = task == null ? void 0 : task.Loop) == null ? void 0 : _a.time) ?? 0);
-  if (!hasSteps && loopCount > 1 && steps.length > 0) {
-    return { id, name, steps: [{ type: "loop", count: loopCount, steps }] };
-  }
-  return { id, name, steps };
+function E(e) {
+  var a;
+  const n = String((e == null ? void 0 : e.id) ?? ""), o = String((e == null ? void 0 : e.name) ?? ""), i = Array.isArray(e == null ? void 0 : e.steps), r = i ? e.steps : B(e), c = Number(((a = e == null ? void 0 : e.Loop) == null ? void 0 : a.time) ?? 0);
+  return !i && c > 1 && r.length > 0 ? { id: n, name: o, steps: [{ type: "loop", count: c, steps: r }] } : { id: n, name: o, steps: r };
 }
-async function executeStep(step) {
-  if (!step || !step.type) return;
-  switch (step.type) {
-    case "open":
-      if (step.path) OpenPrograms("file", String(step.path), "");
-      break;
-    case "script":
-      if (step.path) OpenPrograms("script", String(step.path), String(step.stack ?? ".py"));
-      break;
-    case "mouse":
-      if (step.x !== void 0 && step.y !== void 0) {
-        ({ x: Number(step.x), y: Number(step.y), has: true });
-        CallAutomationMouse(String(step.x), String(step.y), "left");
+async function N(e) {
+  if (!(!e || !e.type))
+    switch (e.type) {
+      case "open":
+        e.path && A("file", String(e.path), "");
+        break;
+      case "script":
+        e.path && A("script", String(e.path), String(e.stack ?? ".py"));
+        break;
+      case "mouse":
+        e.x !== void 0 && e.y !== void 0 && (Number(e.x), Number(e.y), M(String(e.x), String(e.y), "left"));
+        break;
+      case "click":
+        V(String(e.button ?? "left"));
+        break;
+      case "write":
+        e.text && W(String(e.text));
+        break;
+      case "delay":
+        await q(Number(e.ms ?? 0));
+        break;
+      case "loop": {
+        const n = Number(e.count ?? 1), o = n > 0 ? n : 1;
+        for (let i = 0; i < o; i++)
+          for (const r of e.steps ?? [])
+            await N(r);
+        break;
       }
-      break;
-    case "click":
-      CallAutomationMouseClicked(String(step.button ?? "left"));
-      break;
-    case "write":
-      if (step.text) CallAutomationKeyboard("write", String(step.text), "0");
-      break;
-    case "delay":
-      await sleep(Number(step.ms ?? 0));
-      break;
-    case "loop": {
-      const count = Number(step.count ?? 1);
-      const safeCount = count > 0 ? count : 1;
-      for (let i = 0; i < safeCount; i++) {
-        for (const inner of step.steps ?? []) {
-          await executeStep(inner);
-        }
-      }
-      break;
     }
-  }
 }
-ipcMain.handle("get:path", async (event, type) => {
-  var _a, _b;
-  if (!((_a = TaskUser.Task) == null ? void 0 : _a.Program)) return;
-  if (!((_b = TaskUser.Task) == null ? void 0 : _b.Script)) return;
-  let resultado;
-  if (type == "open") {
-    resultado = await dialog.showOpenDialog(win ?? void 0, {
+g.handle("get:path", async (e, n) => {
+  var i, r;
+  if (!((i = p.Task) != null && i.Program) || !((r = p.Task) != null && r.Script)) return;
+  let o;
+  if (n == "open") {
+    if (o = await v.showOpenDialog(l ?? void 0, {
       properties: ["openFile"]
-    });
-    if (resultado.canceled) {
+    }), o.canceled)
       return {
         saida: "Operação cancelada"
       };
-    }
-    TaskUser.Task.Program.Path = resultado.filePaths[0];
+    p.Task.Program.Path = o.filePaths[0];
   } else {
-    resultado = await dialog.showOpenDialog(win ?? void 0, {
+    if (o = await v.showOpenDialog(l ?? void 0, {
       properties: ["openFile"],
       filters: [
         {
@@ -244,90 +188,67 @@ ipcMain.handle("get:path", async (event, type) => {
           extensions: ["*"]
         }
       ]
-    });
-    if (resultado.canceled) {
+    }), o.canceled)
       return {
         saida: "Operação cancelada"
       };
-    }
-    TaskUser.Task.Script.Path = resultado.filePaths[0];
+    p.Task.Script.Path = o.filePaths[0];
   }
   return {
-    saida: resultado.filePaths[0]
+    saida: o.filePaths[0]
   };
 });
-ipcMain.on("save:config", async (event, automation) => {
-  if (!(automation == null ? void 0 : automation.id)) return;
-  try {
-    const task = normalizeTask(automation);
-    if (!task.id) return;
-    const json = await loadJSON();
-    if (!Array.isArray(json.Tasks)) json.Tasks = [];
-    const index = json.Tasks.findIndex((t) => String((t == null ? void 0 : t.id) ?? "") === task.id);
-    if (index !== -1) {
-      json.Tasks[index] = { ...json.Tasks[index], ...task };
-    } else {
-      json.Tasks.push(task);
+g.on("save:config", async (e, n) => {
+  if (n != null && n.id)
+    try {
+      const o = E(n);
+      if (!o.id) return;
+      const i = await w();
+      Array.isArray(i.Tasks) || (i.Tasks = []);
+      const r = i.Tasks.findIndex((c) => String((c == null ? void 0 : c.id) ?? "") === o.id);
+      r !== -1 ? i.Tasks[r] = { ...i.Tasks[r], ...o } : i.Tasks.push(o), await u.writeFile(m, JSON.stringify(i, null, 2));
+    } catch (o) {
+      console.log("Falha ao salvar config.json", o);
     }
-    await fs.writeFile(pathJSON, JSON.stringify(json, null, 2));
-  } catch (e) {
-    console.log("Falha ao salvar config.json", e);
-  }
 });
-ipcMain.handle("config:load", async () => {
+g.handle("config:load", async () => {
   try {
-    const json = await loadJSON();
-    return Array.isArray(json.Tasks) ? json.Tasks : [];
+    const e = await w();
+    return Array.isArray(e.Tasks) ? e.Tasks : [];
   } catch (e) {
-    console.log("Falha ao carregar config.json", e);
-    return [];
+    return console.log("Falha ao carregar config.json", e), [];
   }
 });
-ipcMain.on("config:delete", async (event, id) => {
-  const idStr = String(id ?? "");
-  if (!idStr) return;
-  try {
-    const json = await loadJSON();
-    if (!Array.isArray(json.Tasks)) json.Tasks = [];
-    json.Tasks = json.Tasks.filter((t) => String((t == null ? void 0 : t.id) ?? "") !== idStr);
-    await fs.writeFile(pathJSON, JSON.stringify(json, null, 2));
-  } catch (e) {
-    console.log("Falha ao deletar no config.json", e);
-  }
+g.on("config:delete", async (e, n) => {
+  const o = String(n ?? "");
+  if (o)
+    try {
+      const i = await w();
+      Array.isArray(i.Tasks) || (i.Tasks = []), i.Tasks = i.Tasks.filter((r) => String((r == null ? void 0 : r.id) ?? "") !== o), await u.writeFile(m, JSON.stringify(i, null, 2));
+    } catch (i) {
+      console.log("Falha ao deletar no config.json", i);
+    }
 });
-ipcMain.on("config:play", async (event, key) => {
-  const JSONuser = await loadJSON();
-  const tasks = Array.isArray(JSONuser.Tasks) ? JSONuser.Tasks : [];
-  const keyStr = String(key ?? "");
-  const task = tasks.find((t) => {
-    const nameStr = String((t == null ? void 0 : t.name) ?? "");
-    const idStr = String((t == null ? void 0 : t.id) ?? "");
-    return keyStr === idStr || keyStr.toLowerCase() === nameStr.toLowerCase();
+g.on("config:play", async (e, n) => {
+  const o = await w(), i = Array.isArray(o.Tasks) ? o.Tasks : [], r = String(n ?? ""), c = i.find((s) => {
+    const S = String((s == null ? void 0 : s.name) ?? ""), R = String((s == null ? void 0 : s.id) ?? "");
+    return r === R || r.toLowerCase() === S.toLowerCase();
   });
-  if (!task) {
+  if (!c) {
     console.log("processo nn encontrado");
     return;
   }
-  const normalized = normalizeTask(task);
-  for (const step of normalized.steps ?? []) {
-    await executeStep(step);
-  }
+  const a = E(c);
+  for (const s of a.steps ?? [])
+    await N(s);
 });
-ipcMain.on("get:stack", (event, stack) => {
-  var _a, _b;
-  if (stack == ".py" || stack == ".cs" || stack == ".cpp" || stack == ".c" || stack == ".bat" || stack == ".ps1") {
-    if ((_a = TaskUser.Task) == null ? void 0 : _a.Script) {
-      TaskUser.Task.Script.Stack = stack;
-    }
-  } else {
-    if ((_b = TaskUser.Task) == null ? void 0 : _b.Script) {
-      TaskUser.Task.Script.Stack = ".py";
-    }
-  }
+g.on("get:stack", (e, n) => {
+  var o, i;
+  n == ".py" || n == ".cs" || n == ".cpp" || n == ".c" || n == ".bat" || n == ".ps1" ? (o = p.Task) != null && o.Script && (p.Task.Script.Stack = n) : (i = p.Task) != null && i.Script && (p.Task.Script.Stack = ".py");
 });
-app.whenReady().then(createWindow);
+y.whenReady().then(C);
 export {
-  MAIN_DIST,
-  RENDERER_DIST,
-  VITE_DEV_SERVER_URL
+  x as MAIN_DIST,
+  f as RENDERER_DIST,
+  T as VITE_DEV_SERVER_URL
 };

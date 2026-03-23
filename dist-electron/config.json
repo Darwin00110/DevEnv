@@ -1,32 +1,3 @@
 {
-  "Tasks": [
-    {
-      "id": "u1qknhel",
-      "name": "porco voador02",
-      "steps": [
-        {
-          "id": "ui9kztph",
-          "type": "mouse",
-          "x": 700,
-          "y": 300
-        },
-        {
-          "id": "1xhz0yfb",
-          "type": "click",
-          "button": "right"
-        },
-        {
-          "id": "m41alee2",
-          "type": "delay",
-          "ms": 4000
-        },
-        {
-          "id": "xahyjsc4",
-          "type": "mouse",
-          "x": 200,
-          "y": 500
-        }
-      ]
-    }
-  ]
+  "Tasks": []
 }

@@ -28,10 +28,9 @@ func PainelPrincipal() {
 ---------
 1-args x
 2-args y
-3-args button_Mouse
-4-args Define the image if you want OpenCV to detect it. Note: OpenCV identifies the 
+3-args write_message
+4-args-beta Define the image if you want OpenCV to detect it. Note: OpenCV identifies the 
 screenshot and tries to locate it on the screen; if it's visible, clicking on the image location triggers the action.
-	
 	`)
 }
 
@@ -59,9 +58,9 @@ Execute Program with not arguments for more detal
 	`)
 }
 
-func CoreProgram(x int, y int, PathImageOpenCV string) {
+func CoreProgram(x int, y int, text string) {
 	robotgo.Move(x, y)
-	fmt.Println(PathImageOpenCV)
+	fmt.Println(text)
 }
 
 func main() {
@@ -71,7 +70,7 @@ func main() {
 		return
 	}
 	// esperamos exatamente 4 argumentos: x y button path
-	if len(os.Args) > 4 {
+	if len(os.Args) > 3 {
 		ErrorPainel()
 		os.Exit(1)
 	}
@@ -86,6 +85,6 @@ func main() {
 		ErrorPainel()
 		os.Exit(1)
 	}
-	PathImageOpenCV := os.Args[3]
-	CoreProgram(x, y, PathImageOpenCV)
+	Text := os.Args[3]
+	CoreProgram(x, y, Text)
 }

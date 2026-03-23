@@ -1,7 +1,7 @@
 {
   "name": "devenv",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -93,6 +93,17 @@
   "main": "dist-electron/main.js",
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "Darwin",
+  "license": "ISC",
+  "build": {
+    "extraResources": [
+      {
+        "from": "./backend",
+        "to": "bin/backend",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  }
 }

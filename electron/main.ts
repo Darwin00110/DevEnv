@@ -27,12 +27,16 @@ export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 const isDev = !app.isPackaged
+const pathProd = path.join(process.resourcesPath)
 const pathJSON = isDev ? path.join(MAIN_DIST, 'config.json') : path.join(RENDERER_DIST, 'config.json')
 const pathICON = isDev ? path.resolve(path.join(MAIN_DIST, "..", "icon", 'icon.ico')) : path.join(RENDERER_DIST, 'icon.ico')
 const pathBACKEND = isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend")) : path.join(RENDERER_DIST, 'backend')
 const pathAutomation = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Core", "main.exe")) : path.join(RENDERER_DIST, 'backend', 'Automation', "main.exe")
 const pathAutomationClicked = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Clicked", "main.exe")) : path.join(RENDERER_DIST, 'backend', 'Automation', "Clicked", "main.exe")
+const pathAutomationKeyboard = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Core", "Write", "main.exe")) : path.join(RENDERER_DIST, 'backend', 'Automation', "Core", "Write", "main.exe")
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
+
+console.log(pathProd)
 
 let win: BrowserWindow | null
 let lastMousePos: { x: number; y: number; has: boolean } = { x: 0, y: 0, has: false }
@@ -201,11 +205,13 @@ function CallAutomationMouseClicked(button: string) {
 }
 
 
-function CallAutomationKeyboard(mode: string, text: string, delay: string) {
-  exec(`${pathAutomation} ${mode} ${text} ${delay}`, (error) => {
+function CallAutomationKeyboard(text: string) {
+  console.log("to chegando aqui")
+  exec(`${pathAutomationKeyboard} ${text}`, (error, stdout) => {
     if (error) {
       console.log(`Erro do treco aqui parceiro: ${error}`)
     }
+    console.log(`Saida: ${stdout}`)
   })
 }
 
@@ -287,7 +293,7 @@ async function executeStep(step: any): Promise<void> {
       CallAutomationMouseClicked(String(step.button ?? 'left'))
       break
     case 'write':
-      if (step.text) CallAutomationKeyboard("write", String(step.text), "0")
+      if (step.text) CallAutomationKeyboard(String(step.text))
       break
     case 'delay':
       await sleep(Number(step.ms ?? 0))
