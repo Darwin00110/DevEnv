@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import fs from 'fs/promises'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import Renderer from 'electron/renderer'
 import { exec, spawn } from 'node:child_process'
@@ -27,16 +28,35 @@ export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
 const isDev = !app.isPackaged
-const pathProd = path.join(process.resourcesPath)
-const pathJSON = isDev ? path.join(MAIN_DIST, 'config.json') : path.join(RENDERER_DIST, 'config.json')
-const pathICON = isDev ? path.resolve(path.join(MAIN_DIST, "..", "icon", 'icon.ico')) : path.join(RENDERER_DIST, 'icon.ico')
-const pathBACKEND = isDev ? path.resolve(path.join(MAIN_DIST, "..", "backend")) : path.join(RENDERER_DIST, 'backend')
-const pathAutomation = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Core", "main.exe")) : path.join(RENDERER_DIST, 'backend', 'Automation', "main.exe")
-const pathAutomationClicked = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Clicked", "main.exe")) : path.join(RENDERER_DIST, 'backend', 'Automation', "Clicked", "main.exe")
-const pathAutomationKeyboard = isDev ? path.resolve(path.join(pathBACKEND, "Automation", "Core", "Write", "main.exe")) : path.join(RENDERER_DIST, 'backend', 'Automation', "Core", "Write", "main.exe")
+const pathJSON = isDev
+  ? path.join(MAIN_DIST, 'config.json')
+  : path.join(app.getPath('userData'), 'config.json')
+const pathICON = isDev
+  ? path.resolve(path.join(MAIN_DIST, "..", "icon", 'icon.ico'))
+  : path.join(process.resourcesPath, 'icon', 'dev_env.ico')
+const pathBACKEND = (() => {
+  if (isDev) {
+    return path.resolve(path.join(MAIN_DIST, "..", "backend"))
+  }
+
+  const candidates = [
+    path.join(process.resourcesPath, 'backend'),
+    path.join(app.getAppPath(), 'dist', 'backend'),
+    path.join(process.resourcesPath, 'app.asar', 'dist', 'backend'),
+  ]
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+  }
+
+  return path.join(process.resourcesPath, 'backend')
+})()
+const pathAutomation = path.resolve(path.join(pathBACKEND, "Automation", "Core", "main.exe"))
+const pathAutomationClicked = path.resolve(path.join(pathBACKEND, "Automation", "Clicked", "main.exe"))
+const pathAutomationKeyboard = path.resolve(path.join(pathBACKEND, "Automation", "Core", "Write", "main.exe"))
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 'public') : RENDERER_DIST
 
-console.log(pathProd)
+console.log(process.resourcesPath)
 
 let win: BrowserWindow | null
 let lastMousePos: { x: number; y: number; has: boolean } = { x: 0, y: 0, has: false }
@@ -103,6 +123,7 @@ function createWindow() {
   win = new BrowserWindow({
     x: 740,
     icon: pathICON,
+    autoHideMenuBar: true,
     y: 100,
     width: 700,
     height: 600,
@@ -120,8 +141,9 @@ function createWindow() {
     win.loadURL(VITE_DEV_SERVER_URL)
     win.webContents.openDevTools()
   } else {
-    // win.loadFile('dist/index.html')
-    win.loadFile(path.join(RENDERER_DIST, 'index.html'))
+    // When packaged, load from app.asar
+    const appPath = app.getAppPath()
+    win.loadFile(path.join(appPath, 'dist', 'index.html'))
   }
 }
 
@@ -216,8 +238,13 @@ function CallAutomationKeyboard(text: string) {
 }
 
 
+async function ensureConfigDir() {
+  await fs.mkdir(path.dirname(pathJSON), { recursive: true })
+}
+
 async function loadJSON() {
   try {
+    await ensureConfigDir()
     const arquivo = await fs.readFile(pathJSON, 'utf-8')
     try {
       return JSON.parse(arquivo)
@@ -234,11 +261,13 @@ async function loadJSON() {
         }
       }
       const fallback = { Tasks: [] }
+      await ensureConfigDir()
       await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2))
       return fallback
     }
   } catch {
     const fallback = { Tasks: [] }
+    await ensureConfigDir()
     await fs.writeFile(pathJSON, JSON.stringify(fallback, null, 2))
     return fallback
   }
@@ -355,6 +384,7 @@ ipcMain.handle('get:path', async (event, type) => {
 ipcMain.on('save:config', async (event, automation) => {
   if (!automation?.id) return
   try {
+    await ensureConfigDir()
     const task = normalizeTask(automation)
     if (!task.id) return
     const json = await loadJSON()

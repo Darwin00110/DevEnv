@@ -5,11 +5,24 @@
   "asar": true,
   "productName": "DevEnv",
   "directories": {
-    "output": "./dist/DevEnv"
+    "output": "./DevEnv-build"
   },
   "files": [
-    "dist",
-    "dist-electron"
+    "dist/**",
+    "dist-electron/**"
+  ],
+  "extraResources": [
+    {
+      "from": "./backend",
+      "to": "backend",
+      "filter": [
+        "**/*"
+      ]
+    },
+    {
+      "from": "./icon/dev_env.ico",
+      "to": "icon/dev_env.ico"
+    }
   ],
   "mac": {
     "target": [

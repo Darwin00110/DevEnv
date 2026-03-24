@@ -1,15 +1,27 @@
-import { app as y, BrowserWindow as j, ipcMain as g, dialog as v } from "electron";
-import { createRequire as $ } from "node:module";
-import { fileURLToPath as F } from "node:url";
+import { app as d, BrowserWindow as j, ipcMain as h, dialog as x } from "electron";
+import { createRequire as _ } from "node:module";
+import { fileURLToPath as $ } from "node:url";
 import u from "fs/promises";
+import { existsSync as D } from "node:fs";
 import t from "node:path";
-import { exec as P, spawn as d } from "node:child_process";
-$(import.meta.url);
-const O = t.dirname(F(import.meta.url));
+import { exec as P, spawn as f } from "node:child_process";
+_(import.meta.url);
+const O = t.dirname($(import.meta.url));
 process.env.APP_ROOT = t.join(O, "..");
-const T = process.env.VITE_DEV_SERVER_URL, x = t.join(process.env.APP_ROOT, "dist-electron"), f = t.join(process.env.APP_ROOT, "dist"), h = !y.isPackaged, _ = t.join(process.resourcesPath), m = h ? t.join(x, "config.json") : t.join(f, "config.json"), D = h ? t.resolve(t.join(x, "..", "icon", "icon.ico")) : t.join(f, "icon.ico"), b = h ? t.resolve(t.join(x, "..", "backend")) : t.join(f, "backend"), L = h ? t.resolve(t.join(b, "Automation", "Core", "main.exe")) : t.join(f, "backend", "Automation", "main.exe"), I = h ? t.resolve(t.join(b, "Automation", "Clicked", "main.exe")) : t.join(f, "backend", "Automation", "Clicked", "main.exe"), J = h ? t.resolve(t.join(b, "Automation", "Core", "Write", "main.exe")) : t.join(f, "backend", "Automation", "Core", "Write", "main.exe");
-process.env.VITE_PUBLIC = T ? t.join(process.env.APP_ROOT, "public") : f;
-console.log(_);
+const w = process.env.VITE_DEV_SERVER_URL, T = t.join(process.env.APP_ROOT, "dist-electron"), F = t.join(process.env.APP_ROOT, "dist"), v = !d.isPackaged, g = v ? t.join(T, "config.json") : t.join(d.getPath("userData"), "config.json"), L = v ? t.resolve(t.join(T, "..", "icon", "icon.ico")) : t.join(process.resourcesPath, "icon", "dev_env.ico"), b = (() => {
+  if (v)
+    return t.resolve(t.join(T, "..", "backend"));
+  const e = [
+    t.join(process.resourcesPath, "backend"),
+    t.join(d.getAppPath(), "dist", "backend"),
+    t.join(process.resourcesPath, "app.asar", "dist", "backend")
+  ];
+  for (const n of e)
+    if (D(n)) return n;
+  return t.join(process.resourcesPath, "backend");
+})(), M = t.resolve(t.join(b, "Automation", "Core", "main.exe")), I = t.resolve(t.join(b, "Automation", "Clicked", "main.exe")), J = t.resolve(t.join(b, "Automation", "Core", "Write", "main.exe"));
+process.env.VITE_PUBLIC = w ? t.join(process.env.APP_ROOT, "public") : F;
+console.log(process.resourcesPath);
 let l;
 const p = {
   Task: {
@@ -23,9 +35,10 @@ const p = {
   }
 };
 function C() {
-  l = new j({
+  if (l = new j({
     x: 740,
-    icon: D,
+    icon: L,
+    autoHideMenuBar: !0,
     y: 100,
     width: 700,
     height: 600,
@@ -34,22 +47,27 @@ function C() {
     }
   }), l.webContents.on("did-finish-load", () => {
     l == null || l.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), T ? (l.loadURL(T), l.webContents.openDevTools()) : l.loadFile(t.join(f, "index.html"));
+  }), w)
+    l.loadURL(w), l.webContents.openDevTools();
+  else {
+    const e = d.getAppPath();
+    l.loadFile(t.join(e, "dist", "index.html"));
+  }
 }
-y.on("window-all-closed", () => {
-  process.platform !== "darwin" && (y.quit(), l = null);
+d.on("window-all-closed", () => {
+  process.platform !== "darwin" && (d.quit(), l = null);
 });
-y.on("activate", () => {
+d.on("activate", () => {
   j.getAllWindows().length === 0 && C();
 });
 function A(e, n, o) {
   let i = t.resolve(n);
   if (o = o ?? "", e.toLowerCase() == "file") {
-    let r = d(i);
-    r.on("close", (c) => {
-      console.log("Processo finalizado com código: " + c);
-    }), r.stderr.on("data", (c) => {
-      console.log("Erro: " + c);
+    let r = f(i);
+    r.on("close", (a) => {
+      console.log("Processo finalizado com código: " + a);
+    }), r.stderr.on("data", (a) => {
+      console.log("Erro: " + a);
     });
   }
   if (e.toLowerCase() == "script") {
@@ -58,32 +76,32 @@ function A(e, n, o) {
       console.log(`Extensão diferente: esperado ${o}, veio ${r}`);
       return;
     }
-    let c;
+    let a;
     if (o === ".py")
-      c = d("python", [i]);
+      a = f("python", [i]);
     else if (o === ".c")
-      c = d("gcc", [i]);
+      a = f("gcc", [i]);
     else if (o === ".cs")
-      c = d("dotnet run", [i]);
+      a = f("dotnet run", [i]);
     else if (o === ".cpp")
-      c = d("g++", [i]);
+      a = f("g++", [i]);
     else if (o === ".ps1")
-      c = d("powershell", ["-ExecutionPolicy", "Bypass", "-File", i]);
+      a = f("powershell", ["-ExecutionPolicy", "Bypass", "-File", i]);
     else if (o === ".bat")
-      c = d("cmd", ["/c", i]);
+      a = f("cmd", ["/c", i]);
     else {
       console.log(`Stack ${o} ainda não suportada para execução`);
       return;
     }
-    c.on("close", (a) => {
-      console.log("Processo finalizado com código: " + a);
-    }), c.stderr.on("data", (a) => {
-      console.log("Erro: " + a);
+    a.on("close", (s) => {
+      console.log("Processo finalizado com código: " + s);
+    }), a.stderr.on("data", (s) => {
+      console.log("Erro: " + s);
     });
   }
 }
-function M(e, n, o = "") {
-  P(`${L} ${e} ${n} ${o}`, (i, r) => {
+function B(e, n, o = "") {
+  P(`${M} ${e} ${n} ${o}`, (i, r) => {
     i && console.log(`Erro do treco aqui parceiro: ${i}`), console.log(`stdout: ${r}`);
   });
 }
@@ -92,14 +110,18 @@ function V(e) {
     n && console.log("Erro na chamada do click do mouse");
   });
 }
-function W(e) {
+function q(e) {
   console.log("to chegando aqui"), P(`${J} ${e}`, (n, o) => {
     n && console.log(`Erro do treco aqui parceiro: ${n}`), console.log(`Saida: ${o}`);
   });
 }
-async function w() {
+async function y() {
+  await u.mkdir(t.dirname(g), { recursive: !0 });
+}
+async function S() {
   try {
-    const e = await u.readFile(m, "utf-8");
+    await y();
+    const e = await u.readFile(g, "utf-8");
     try {
       return JSON.parse(e);
     } catch {
@@ -108,30 +130,30 @@ async function w() {
         const i = e.slice(0, n + 1);
         try {
           const r = JSON.parse(i);
-          return await u.writeFile(m, JSON.stringify(r, null, 2)), r;
+          return await u.writeFile(g, JSON.stringify(r, null, 2)), r;
         } catch {
         }
       }
       const o = { Tasks: [] };
-      return await u.writeFile(m, JSON.stringify(o, null, 2)), o;
+      return await y(), await u.writeFile(g, JSON.stringify(o, null, 2)), o;
     }
   } catch {
     const e = { Tasks: [] };
-    return await u.writeFile(m, JSON.stringify(e, null, 2)), e;
+    return await y(), await u.writeFile(g, JSON.stringify(e, null, 2)), e;
   }
 }
-function q(e) {
+function U(e) {
   return new Promise((n) => setTimeout(n, e));
 }
-function B(e) {
-  var o, i, r, c, a, s, S;
+function W(e) {
+  var o, i, r, a, s, c, m;
   const n = [];
-  return (o = e == null ? void 0 : e.Program) != null && o.Path && n.push({ type: "open", path: e.Program.Path }), (i = e == null ? void 0 : e.Script) != null && i.Path && n.push({ type: "script", path: e.Script.Path, stack: e.Script.Stack ?? ".py" }), ((r = e == null ? void 0 : e.Mouse) == null ? void 0 : r.x) !== void 0 && ((c = e == null ? void 0 : e.Mouse) == null ? void 0 : c.y) !== void 0 && n.push({ type: "mouse", x: e.Mouse.x, y: e.Mouse.y }), (a = e == null ? void 0 : e.Mouse) != null && a.click && n.push({ type: "click", button: e.Mouse.click }), (s = e == null ? void 0 : e.WriteText) != null && s.text && n.push({ type: "write", text: e.WriteText.text }), (S = e == null ? void 0 : e.Delay) != null && S.time && n.push({ type: "delay", ms: e.Delay.time }), n;
+  return (o = e == null ? void 0 : e.Program) != null && o.Path && n.push({ type: "open", path: e.Program.Path }), (i = e == null ? void 0 : e.Script) != null && i.Path && n.push({ type: "script", path: e.Script.Path, stack: e.Script.Stack ?? ".py" }), ((r = e == null ? void 0 : e.Mouse) == null ? void 0 : r.x) !== void 0 && ((a = e == null ? void 0 : e.Mouse) == null ? void 0 : a.y) !== void 0 && n.push({ type: "mouse", x: e.Mouse.x, y: e.Mouse.y }), (s = e == null ? void 0 : e.Mouse) != null && s.click && n.push({ type: "click", button: e.Mouse.click }), (c = e == null ? void 0 : e.WriteText) != null && c.text && n.push({ type: "write", text: e.WriteText.text }), (m = e == null ? void 0 : e.Delay) != null && m.time && n.push({ type: "delay", ms: e.Delay.time }), n;
 }
 function E(e) {
-  var a;
-  const n = String((e == null ? void 0 : e.id) ?? ""), o = String((e == null ? void 0 : e.name) ?? ""), i = Array.isArray(e == null ? void 0 : e.steps), r = i ? e.steps : B(e), c = Number(((a = e == null ? void 0 : e.Loop) == null ? void 0 : a.time) ?? 0);
-  return !i && c > 1 && r.length > 0 ? { id: n, name: o, steps: [{ type: "loop", count: c, steps: r }] } : { id: n, name: o, steps: r };
+  var s;
+  const n = String((e == null ? void 0 : e.id) ?? ""), o = String((e == null ? void 0 : e.name) ?? ""), i = Array.isArray(e == null ? void 0 : e.steps), r = i ? e.steps : W(e), a = Number(((s = e == null ? void 0 : e.Loop) == null ? void 0 : s.time) ?? 0);
+  return !i && a > 1 && r.length > 0 ? { id: n, name: o, steps: [{ type: "loop", count: a, steps: r }] } : { id: n, name: o, steps: r };
 }
 async function N(e) {
   if (!(!e || !e.type))
@@ -143,16 +165,16 @@ async function N(e) {
         e.path && A("script", String(e.path), String(e.stack ?? ".py"));
         break;
       case "mouse":
-        e.x !== void 0 && e.y !== void 0 && (Number(e.x), Number(e.y), M(String(e.x), String(e.y), "left"));
+        e.x !== void 0 && e.y !== void 0 && (Number(e.x), Number(e.y), B(String(e.x), String(e.y), "left"));
         break;
       case "click":
         V(String(e.button ?? "left"));
         break;
       case "write":
-        e.text && W(String(e.text));
+        e.text && q(String(e.text));
         break;
       case "delay":
-        await q(Number(e.ms ?? 0));
+        await U(Number(e.ms ?? 0));
         break;
       case "loop": {
         const n = Number(e.count ?? 1), o = n > 0 ? n : 1;
@@ -163,12 +185,12 @@ async function N(e) {
       }
     }
 }
-g.handle("get:path", async (e, n) => {
+h.handle("get:path", async (e, n) => {
   var i, r;
   if (!((i = p.Task) != null && i.Program) || !((r = p.Task) != null && r.Script)) return;
   let o;
   if (n == "open") {
-    if (o = await v.showOpenDialog(l ?? void 0, {
+    if (o = await x.showOpenDialog(l ?? void 0, {
       properties: ["openFile"]
     }), o.canceled)
       return {
@@ -176,7 +198,7 @@ g.handle("get:path", async (e, n) => {
       };
     p.Task.Program.Path = o.filePaths[0];
   } else {
-    if (o = await v.showOpenDialog(l ?? void 0, {
+    if (o = await x.showOpenDialog(l ?? void 0, {
       properties: ["openFile"],
       filters: [
         {
@@ -198,57 +220,58 @@ g.handle("get:path", async (e, n) => {
     saida: o.filePaths[0]
   };
 });
-g.on("save:config", async (e, n) => {
+h.on("save:config", async (e, n) => {
   if (n != null && n.id)
     try {
+      await y();
       const o = E(n);
       if (!o.id) return;
-      const i = await w();
+      const i = await S();
       Array.isArray(i.Tasks) || (i.Tasks = []);
-      const r = i.Tasks.findIndex((c) => String((c == null ? void 0 : c.id) ?? "") === o.id);
-      r !== -1 ? i.Tasks[r] = { ...i.Tasks[r], ...o } : i.Tasks.push(o), await u.writeFile(m, JSON.stringify(i, null, 2));
+      const r = i.Tasks.findIndex((a) => String((a == null ? void 0 : a.id) ?? "") === o.id);
+      r !== -1 ? i.Tasks[r] = { ...i.Tasks[r], ...o } : i.Tasks.push(o), await u.writeFile(g, JSON.stringify(i, null, 2));
     } catch (o) {
       console.log("Falha ao salvar config.json", o);
     }
 });
-g.handle("config:load", async () => {
+h.handle("config:load", async () => {
   try {
-    const e = await w();
+    const e = await S();
     return Array.isArray(e.Tasks) ? e.Tasks : [];
   } catch (e) {
     return console.log("Falha ao carregar config.json", e), [];
   }
 });
-g.on("config:delete", async (e, n) => {
+h.on("config:delete", async (e, n) => {
   const o = String(n ?? "");
   if (o)
     try {
-      const i = await w();
-      Array.isArray(i.Tasks) || (i.Tasks = []), i.Tasks = i.Tasks.filter((r) => String((r == null ? void 0 : r.id) ?? "") !== o), await u.writeFile(m, JSON.stringify(i, null, 2));
+      const i = await S();
+      Array.isArray(i.Tasks) || (i.Tasks = []), i.Tasks = i.Tasks.filter((r) => String((r == null ? void 0 : r.id) ?? "") !== o), await u.writeFile(g, JSON.stringify(i, null, 2));
     } catch (i) {
       console.log("Falha ao deletar no config.json", i);
     }
 });
-g.on("config:play", async (e, n) => {
-  const o = await w(), i = Array.isArray(o.Tasks) ? o.Tasks : [], r = String(n ?? ""), c = i.find((s) => {
-    const S = String((s == null ? void 0 : s.name) ?? ""), R = String((s == null ? void 0 : s.id) ?? "");
-    return r === R || r.toLowerCase() === S.toLowerCase();
+h.on("config:play", async (e, n) => {
+  const o = await S(), i = Array.isArray(o.Tasks) ? o.Tasks : [], r = String(n ?? ""), a = i.find((c) => {
+    const m = String((c == null ? void 0 : c.name) ?? ""), R = String((c == null ? void 0 : c.id) ?? "");
+    return r === R || r.toLowerCase() === m.toLowerCase();
   });
-  if (!c) {
+  if (!a) {
     console.log("processo nn encontrado");
     return;
   }
-  const a = E(c);
-  for (const s of a.steps ?? [])
-    await N(s);
+  const s = E(a);
+  for (const c of s.steps ?? [])
+    await N(c);
 });
-g.on("get:stack", (e, n) => {
+h.on("get:stack", (e, n) => {
   var o, i;
   n == ".py" || n == ".cs" || n == ".cpp" || n == ".c" || n == ".bat" || n == ".ps1" ? (o = p.Task) != null && o.Script && (p.Task.Script.Stack = n) : (i = p.Task) != null && i.Script && (p.Task.Script.Stack = ".py");
 });
-y.whenReady().then(C);
+d.whenReady().then(C);
 export {
-  x as MAIN_DIST,
-  f as RENDERER_DIST,
-  T as VITE_DEV_SERVER_URL
+  T as MAIN_DIST,
+  F as RENDERER_DIST,
+  w as VITE_DEV_SERVER_URL
 };

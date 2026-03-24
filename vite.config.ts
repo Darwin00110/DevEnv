@@ -5,7 +5,10 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-   
+  build: {
+    // Avoid failing when previous Electron outputs exist under dist
+    emptyOutDir: false,
+  },
   plugins: [
     react(),
     electron({

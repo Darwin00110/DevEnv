@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && electron-builder",
+    "build": "vite build && electron-builder -c electron-builder.json5",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -94,16 +94,5 @@
   "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
   "keywords": [],
   "author": "Darwin",
-  "license": "ISC",
-  "build": {
-    "extraResources": [
-      {
-        "from": "./backend",
-        "to": "bin/backend",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ]
-  }
+  "license": "ISC"
 }
