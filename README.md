@@ -131,6 +131,6 @@ Cross‑language process orchestration
 Systems programming with Go
 Concurrent task execution
 Packaging and distributing production‑ready software
-📄 License
 
+# 📄 License
 MIT
