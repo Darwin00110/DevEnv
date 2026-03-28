@@ -1,10 +1,11 @@
-DevEnv
+# DevEnv
 
 DevEnv is a desktop automation and development environment orchestrator built with Electron and a native Go backend. The application is designed to perform system-level operations, execute development tasks, and automate environment setup with high performance and reliability.
 
 This project demonstrates advanced integration between a JavaScript-based UI layer and a compiled systems-language runtime, showcasing skills in process orchestration, inter-process communication (IPC), and native OS interaction.
 
-Key Highlights
+# Key Highlights
+
 Native backend written in Go for performance and low-level system access
 Electron + React frontend for cross-platform desktop UI
 IPC bridge between Electron and Go processes
@@ -28,7 +29,8 @@ DevEnv uses a multi-process architecture to separate UI logic from system-level 
       │
       ▼
 [ Operating System APIs ]
-Responsibilities
+
+# Responsibilities
 
 Electron / React
 
@@ -36,12 +38,12 @@ User interface
 State management
 User interaction and configuration
 
-Electron Main Process
+# Electron Main Process
 
 Launching and managing the Go backend process
 Handling IPC between renderer and backend
 
-Go Backend
+# Go Backend
 
 Executing system commands
 Handling automation tasks
@@ -79,18 +81,18 @@ Manage local tooling and scripts from a graphical interface
 Serve as a base architecture for other desktop automation tools
 Tech Stack
 
-Frontend
+# Frontend
 
 React
 Electron
 TailwindCSS
 
-Backend
+# Backend
 
 Go
 Native OS process APIs
 
-Build & Packaging
+# Build & Packaging
 
 Electron Builder
 Go compiler for producing standalone binaries
@@ -122,7 +124,7 @@ Output is streamed back to the UI in real time
 
 This pipeline replicates real-world desktop orchestration tools used in developer platforms and enterprise automation software.
 
-Why Go for the Backend
+# Why Go for the Backend
 
 Go was chosen for:
 
