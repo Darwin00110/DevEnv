@@ -1,293 +1,137 @@
-# DevEnv
-
-DevEnv is a desktop automation orchestrator powered by a native Go backend that performs low-level system interactions and task orchestration.
-
----
-
-# Overview
-
-## Purpose
-
-DevEnv aims to provide developers with a centralized tool to execute development tasks and system operations efficiently.
-
-The project focuses on:
-
-* Reducing repetitive development tasks
-* Integrating development tools
-* Automating system actions
-* Providing a fast and modern interface
-
-## Concept
-
-DevEnv is built as a hybrid desktop application that merges a web-based interface with a high‑performance native backend written in Go.
-
-It provides:
-
-* Modern Web Interface
-* Native System Command Execution via Go
-
-* Key Technical Features
-- Native process spawning and management in Go
-- Concurrent task orchestration using goroutines
-- Direct system command execution without Node wrappers
-- IPC bridge between Electron and Go backend
-
-* Task Automation
-* Interactive Terminal
-
----
-
-# Technologies Used
-
-## Frontend
-
-* React
-* TypeScript
-* TailwindCSS
-
-## Desktop Shell
-
-* Electron / Fenestra
-
-## Backend
-
-* Go (Golang)
-* robotgo
-* os/exec
-* Native process and system control
-
-## Communication Layer
-
-* IPC (Electron ↔ Go backend)
-* External process execution and structured command routing
-
----
-
-# Architecture
-
-## System Architecture
-
-DevEnv uses a layered architecture to separate presentation, orchestration, and system-level execution.
-
-```
-React (User Interface)
-        ↓
-Electron / Fenestra (Bridge Layer)
-        ↓
-        Go Backend (Core Engine)
-        ↓
-Operating System
-```
-
-## Responsibilities by Layer
-
-### React (UI Layer)
-
-* Handles rendering and user interaction
-* Provides terminal interface and command input
-* Displays logs, output, and status messages
-
-### Electron / Fenestra (Bridge Layer)
-
-* Manages application window and lifecycle
-* Handles IPC between the UI and Go backend
-* Spawns and monitors backend processes
-
-### Go Backend (Core Engine)
-
-* Executes system commands
-* Automates OS-level tasks
-* Handles mouse and keyboard automation via robotgo
-* Provides command parsing and execution logic
-
----
-
-# Key Features
-
-## Integrated Terminal
-
-DevEnv includes a built-in terminal that allows users to execute commands directly from the graphical interface.
-
-Example commands:
-
-```
--help
--build
--run
--open
-```
-
-Terminal capabilities:
-
-* Interactive command input
-* Terminal-style typing effect
-* Asynchronous command execution
-* Expandable command system implemented in Go
-
----
-
-## System Automation via Go
-
-The Go backend provides reliable and high-performance access to system resources.
-
-This enables:
-
-* Opening external applications
-* Running scripts and binaries
-* Automating development workflows
-* Controlling mouse and keyboard input
-
-Go was chosen due to:
-
-* Native compilation
-* High performance
-* Easy distribution without requiring a runtime
-
----
-
-## Modern User Interface
-
-The graphical interface is built using React and TailwindCSS to provide a responsive and fluid development experience.
-
-UI goals:
-
-* Simplicity
-* Speed
-* Minimal latency between command input and execution
-
----
-
-# Project Structure
-
-```
 DevEnv
-│
-├─ frontend
-│   ├─ components
-│   ├─ pages
-│   ├─ hooks
-│   └─ styles
-│
-├─ backend
-│   ├─ core
-│   │   ├─ main.go
-│   │   ├─ parser.go
-│   │   └─ executor.go
-│   │
-│   ├─ automation
-│   │   ├─ clicked.go
-│   │   └─ movement.go
-│   │
-│   └─ services
-│       ├─ process.go
-│       └─ system.go
-│
-├─ electron
-│   ├─ main
-│   └─ preload
-│
-└─ README.md
-```
 
-This structure separates command parsing, automation logic, and system services to keep the backend maintainable and scalable.
+DevEnv is a desktop automation and development environment orchestrator built with Electron and a native Go backend. The application is designed to perform system-level operations, execute development tasks, and automate environment setup with high performance and reliability.
 
----
+This project demonstrates advanced integration between a JavaScript-based UI layer and a compiled systems-language runtime, showcasing skills in process orchestration, inter-process communication (IPC), and native OS interaction.
 
-# Command Flow Example
+Key Highlights
+Native backend written in Go for performance and low-level system access
+Electron + React frontend for cross-platform desktop UI
+IPC bridge between Electron and Go processes
+Concurrent task execution using goroutines
+System command orchestration without external scripting languages
+Packaged as a standalone desktop application
+Architecture Overview
 
-```
-User types command in UI
-        ↓
-React sends command via IPC
-        ↓
-Electron forwards to Go backend
-        ↓
-Go parses command and executes action
-        ↓
-Output returned to UI
-```
+DevEnv uses a multi-process architecture to separate UI logic from system-level execution.
 
----
+[ React UI ]
+      │
+      ▼
+[ Electron Renderer ]
+      │ IPC
+      ▼
+[ Electron Main Process ]
+      │ stdio / process bridge
+      ▼
+[ Go Backend Binary ]
+      │
+      ▼
+[ Operating System APIs ]
+Responsibilities
 
-# Installation
+Electron / React
 
-## Clone the repository
+User interface
+State management
+User interaction and configuration
 
-```
-git clone https://github.com/your-username/devenv.git
-```
+Electron Main Process
 
-## Enter the project directory
+Launching and managing the Go backend process
+Handling IPC between renderer and backend
 
-```
-cd devenv
-```
+Go Backend
 
-## Install frontend dependencies
+Executing system commands
+Handling automation tasks
+Managing concurrency and task orchestration
+Interacting directly with the operating system
+Technical Features
+Native Process Management
 
-```
+The Go backend spawns and manages system processes directly, avoiding Node.js wrappers and ensuring predictable execution and performance.
+
+Concurrency with Goroutines
+
+Multiple automation tasks can run simultaneously using Go’s lightweight concurrency model, enabling efficient parallel execution.
+
+Inter‑Process Communication (IPC)
+
+Electron communicates with the Go backend through a structured IPC bridge, allowing the UI to trigger and monitor system operations in real time.
+
+Cross‑Language Integration
+
+This project demonstrates how to integrate:
+
+a compiled language runtime (Go)
+with a JavaScript desktop framework (Electron)
+
+This architecture mirrors patterns used in professional desktop tooling and developer platforms.
+
+Use Cases
+
+DevEnv can be used to:
+
+Automate development environment setup
+Execute repetitive development commands
+Manage local tooling and scripts from a graphical interface
+Serve as a base architecture for other desktop automation tools
+Tech Stack
+
+Frontend
+
+React
+Electron
+TailwindCSS
+
+Backend
+
+Go
+Native OS process APIs
+
+Build & Packaging
+
+Electron Builder
+Go compiler for producing standalone binaries
+Project Structure
+DevEnv/
+├── backend/        # Go source code
+├── electron/       # Electron main process
+├── src/            # React renderer code
+├── build/          # Compiled assets
+└── package.json
+Getting Started
+Prerequisites
+Node.js
+Go
+Install dependencies
 npm install
-```
-
-## Run the application in development mode
-
-```
+Build Go backend
+go build -o backend/bin/dev-env ./backend
+Run in development mode
 npm run dev
-```
-
----
-
-# Building the Project
-
-## Build Frontend
-
-```
+Build production application
 npm run build
-```
+Example Workflow
+User selects an automation task in the UI
+Electron sends an IPC message to the main process
+The main process forwards the request to the Go backend
+The Go backend executes the system command
+Output is streamed back to the UI in real time
 
-## Build Go Backend
+This pipeline replicates real-world desktop orchestration tools used in developer platforms and enterprise automation software.
 
-```
-cd backend
-go build -o devenv-backend main.go
-```
+Why Go for the Backend
 
-This produces a native executable that Electron will spawn during runtime.
+Go was chosen for:
 
----
+fast startup time
+compiled binaries with no runtime dependencies
+strong concurrency model
+safe and predictable system programming
 
-# Project Goals
-
-DevEnv aims to evolve into a powerful development environment capable of:
-
-* Centralizing development tools
-* Automating repetitive tasks
-* Providing fast command execution
-* Integrating deeply with the operating system
-
----
-
-# Roadmap
-
-Planned features:
-
-* Command history
-* Terminal autocomplete
-* Plugin system for extending Go commands
-* Integration with external development tools
-* Configurable automation profiles
-
----
-
-# Contributing
-
-Contributions are welcome.
-
-To contribute:
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a Pull Request
+This makes it ideal for desktop tools that need to execute system commands and manage multiple tasks simultaneously.
 
 ---
 # Images
@@ -297,12 +141,23 @@ To contribute:
 
 ---
 
-# License
+Future Improvements
+Plugin system for custom automation tasks
+Configuration profiles for different development stacks
+Enhanced logging and task history
+What This Project Demonstrates
 
-This project is distributed under the MIT License.
+This repository showcases practical experience with:
 
----
+desktop application architecture
+cross-language process orchestration
+systems programming with Go
+concurrent task execution
+packaging and distributing production-ready software
+License
 
-# Author
+MIT
+
+
 
 Developed by Darwin.
