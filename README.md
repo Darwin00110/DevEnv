@@ -14,7 +14,7 @@ Packaged as a standalone desktop application
 # 🧱 Architecture Overview
 
 The application follows a multi‑process architecture separating UI logic from system execution.
-
+```
 [ React UI ]
       │
       ▼
@@ -28,6 +28,7 @@ The application follows a multi‑process architecture separating UI logic from 
       │
       ▼
 [ Operating System APIs ]
+```
 Responsibilities by Layer
 
 # React / Renderer
