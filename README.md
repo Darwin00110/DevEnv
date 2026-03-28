@@ -72,12 +72,14 @@ Build & Packaging
 Electron Builder
 Go compiler (producing standalone binaries)
 # 📁 Project Structure
+```
 DevEnv/
 ├── backend/        # Go source code
 ├── electron/       # Electron main process
 ├── src/            # React renderer
 ├── build/          # Compiled assets
 └── package.json
+```
 # 🛠️ Getting Started
 Prerequisites
 Node.js
