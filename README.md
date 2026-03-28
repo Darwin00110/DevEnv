@@ -1,6 +1,6 @@
 # DevEnv
 
-DevEnv is a modern development environment designed to simplify common programming tasks and system automation. The application combines modern web technologies with native system integration, allowing developers to execute commands, automate workflows, and manage projects from a single interface.
+DevEnv is a desktop automation orchestrator powered by a native Go backend that performs low-level system interactions and task orchestration.
 
 ---
 
@@ -25,6 +25,13 @@ It provides:
 
 * Modern Web Interface
 * Native System Command Execution via Go
+
+* Key Technical Features
+- Native process spawning and management in Go
+- Concurrent task orchestration using goroutines
+- Direct system command execution without Node wrappers
+- IPC bridge between Electron and Go backend
+
 * Task Automation
 * Interactive Terminal
 
